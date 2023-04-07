@@ -1,121 +1,81 @@
 import json
-import time
+from multiprocessing import Queue
 from pathlib import Path
 
 import cv2
 
-import addons.storages as strgs
-from addons.byte_tracker import BYTETracker, draw_info, tracking
-from base import Rk3588
+from base.camera import Cam
 
 
-CONFIG_FILE = str(Path(__file__).parent.absolute()) + "/config.json"
+CONFIG_FILE = str(Path(__file__).parent.parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
 
-def fill_storages(
-        rk3588: Rk3588,
-        raw_img_strg: strgs.ImageStorage,
-        inf_img_strg: strgs.ImageStorage,
-        dets_strg: strgs.DetectionsStorage,
-        start_time: float
-):
-    """Fill storages with raw frames, frames with bboxes, numpy arrays with
-    detctions
+class VariableCamera(Cam):
+    """Child class of Cam for reset camera settings while inference is running
+    (without rebooting/restarting)
     Args
-    -----------------------------------
-    rk3588: Rk3588
-        Object of Rk3588 class for getting data after inference
-    raw_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage raw frames
-    inf_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage inferenced frames
-    dets_strg: storages.DetectionsStorage
-        Object of DetectionsStorage for numpy arrays with detctions
-    start_time: float
-        Program start time
-    -----------------------------------
+    ---------------------------------------------------------------------------
+    source : int
+        Camera index
+    q_in : multiprocessing.Queue
+        Queue that data reads from
+    q_out : multiprocessing.Queue
+        Queue that data sends to
+    q_settings : multiprocessing.Queue
+        Queue that camera settings reads from
+    ---------------------------------------------------------------------------
+    Attributes
+    ---------------------------------------------------------------------------
+    q_settings : multiprocessing.Queue
+        Queue that camera settings reads from
+    ---------------------------------------------------------------------------
+    Methods
+    ---------------------------------------------------------------------------
+    record() : NoReturn
+        Recordes raw frames, checking and updating settings
+    ---------------------------------------------------------------------------
     """
-    while True:
-            output = rk3588.get_data()
-            if output is not None:
-                raw_frame, inferenced_frame, detections, frame_id = output
-                raw_img_strg.set_data(
-                    data=raw_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                inf_img_strg.set_data(
-                    data=inferenced_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                dets_strg.set_data(
-                    data=detections, # type: ignore
-                    id=frame_id,
-                    start_time=start_time
-                )
-
-
-def show_frames_localy(
-        inf_img_strg: strgs.ImageStorage,
-        start_time: float
-):
-    """Show inferenced frames with fps on device
-    
-    Args
-    -----------------------------------
-    inf_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage inferenced frames
-    start_time: float
-        Program start time
-    -----------------------------------
-    """
-    cur_index = -1
-    counter = 0
-    calculated = False
-    begin_time = time.time()
-    fps = 0
-    stored_data_amount = cfg["storages"]["stored_data_amount"]
-    while True:
-        last_index = inf_img_strg.get_last_index()
-        if cfg["debug"]["showed_frame_id"] and cur_index != last_index:
-            with open(cfg["debug"]["showed_id_file"], 'a') as f:
-                f.write(
-                    "{}\t{:.3f}\n".format(
-                        cur_index,
-                        time.time() - start_time
-                    )
-                )
-        print(
-            "cur - {} last - {}".format(
-                cur_index,
-                last_index
-            ),
-            end='\r'
+    def __init__(
+        self,
+        source: int,
+        q_in: Queue,
+        q_out: Queue,
+        q_settings: Queue
+    ):
+        super().__init__(
+            source = source,
+            q_in = q_in,
+            q_out = q_out
         )
-        frame =\
-            inf_img_strg.get_data_by_index(last_index % stored_data_amount)
-        if cfg["camera"]["show"]:
-            cv2.putText(
-                img=frame,
-                text="{:.2f}".format(fps),
-                org=(5, 25),
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=0.8,
-                color=(255, 255, 255),
-                thickness=2,
-                lineType=cv2.LINE_AA
-            )
-            cv2.imshow("frame", frame)
-            cv2.waitKey(1)
-        if last_index > cur_index:
-            counter += 1
-            cur_index = last_index
-        if counter % 60 == 0 and not calculated:
-            calculated = True
-            fps = 60/(time.time() - begin_time)
-            begin_time = time.time()
-        if counter % 60 != 0:
-            calculated = False
+        self._q_settings = q_settings
+
+    def record(self):
+        if not self._cap.isOpened():
+            print("Bad source")
+        try:
+            while True:
+                if not self._q_settings.empty():
+                    settings = self._q_settings.get()
+                    for setting in settings:
+                        if setting == 'source':
+                            pixel_format = cfg["camera"]["pixel_format"]
+                            self._cap.release()
+                            self._cap = cv2.VideoCapture(settings[setting])
+                            self._cap.set(
+                                cv2.CAP_PROP_FOURCC,
+                                cv2.VideoWriter.fourcc(*pixel_format)
+                            )
+                            continue
+                        self._cap.set(int(setting), settings[setting])
+                    print("Settings updated!")
+                ret, frame = self._cap.read()
+                raw_frame = frame.copy()
+                if self._q_out.full():
+                    continue
+                frame = self._pre_process(frame) # type: ignore
+                self._q_out.put((frame, raw_frame, self._frame_id))
+                self._frame_id+=1
+        finally:
+            self._cap.release()

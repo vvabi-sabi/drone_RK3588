@@ -1,121 +1,62 @@
-import json
-import time
-from pathlib import Path
+from multiprocessing import Queue
 
-import cv2
+from rknnlite.api import RKNNLite
 
-import addons.storages as strgs
-from addons.byte_tracker import BYTETracker, draw_info, tracking
-from base import Rk3588
+from base.inference import Yolov5
 
 
-CONFIG_FILE = str(Path(__file__).parent.absolute()) + "/config.json"
-with open(CONFIG_FILE, 'r') as config_file:
-    cfg = json.load(config_file)
-
-
-def fill_storages(
-        rk3588: Rk3588,
-        raw_img_strg: strgs.ImageStorage,
-        inf_img_strg: strgs.ImageStorage,
-        dets_strg: strgs.DetectionsStorage,
-        start_time: float
-):
-    """Fill storages with raw frames, frames with bboxes, numpy arrays with
-    detctions
+class VariableYolov5(Yolov5):
+    """Child class of Yolov5 for reset model while inference is running
+    (without rebooting/restarting)
     Args
-    -----------------------------------
-    rk3588: Rk3588
-        Object of Rk3588 class for getting data after inference
-    raw_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage raw frames
-    inf_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage inferenced frames
-    dets_strg: storages.DetectionsStorage
-        Object of DetectionsStorage for numpy arrays with detctions
-    start_time: float
-        Program start time
-    -----------------------------------
+    ---------------------------------------------------------------------------
+    proc : int
+        Number of running process for inference
+    q_in : multiprocessing.Queue
+        Queue that data reads from
+    q_out : multiprocessing.Queue
+        Queue that data sends to
+    core : int
+        Index of NPU core(s) that will be used for inference
+        default (RKNNLite.NPU_CORE_AUTO) : sets all cores for inference 
+        one frame
+    ---------------------------------------------------------------------------
+    Attributes
+    ---------------------------------------------------------------------------
+    q_model : multiprocessing.Queue
+        Queue that new model reads from
+    ---------------------------------------------------------------------------
+    Methods
+    ---------------------------------------------------------------------------
+    inference() : NoReturn
+        inference resized raw frames, checking and updating model
+    ---------------------------------------------------------------------------
     """
-    while True:
-            output = rk3588.get_data()
-            if output is not None:
-                raw_frame, inferenced_frame, detections, frame_id = output
-                raw_img_strg.set_data(
-                    data=raw_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                inf_img_strg.set_data(
-                    data=inferenced_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                dets_strg.set_data(
-                    data=detections, # type: ignore
-                    id=frame_id,
-                    start_time=start_time
-                )
-
-
-def show_frames_localy(
-        inf_img_strg: strgs.ImageStorage,
-        start_time: float
-):
-    """Show inferenced frames with fps on device
-    
-    Args
-    -----------------------------------
-    inf_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage inferenced frames
-    start_time: float
-        Program start time
-    -----------------------------------
-    """
-    cur_index = -1
-    counter = 0
-    calculated = False
-    begin_time = time.time()
-    fps = 0
-    stored_data_amount = cfg["storages"]["stored_data_amount"]
-    while True:
-        last_index = inf_img_strg.get_last_index()
-        if cfg["debug"]["showed_frame_id"] and cur_index != last_index:
-            with open(cfg["debug"]["showed_id_file"], 'a') as f:
-                f.write(
-                    "{}\t{:.3f}\n".format(
-                        cur_index,
-                        time.time() - start_time
-                    )
-                )
-        print(
-            "cur - {} last - {}".format(
-                cur_index,
-                last_index
-            ),
-            end='\r'
+    def __init__(
+        self,
+        proc: int,
+        q_in: Queue,
+        q_out: Queue,
+        q_model: Queue,
+        core: int = RKNNLite.NPU_CORE_AUTO
+    ):
+        super().__init__(
+            proc = proc,
+            q_in = q_in,
+            q_out = q_out,
+            core = core
         )
-        frame =\
-            inf_img_strg.get_data_by_index(last_index % stored_data_amount)
-        if cfg["camera"]["show"]:
-            cv2.putText(
-                img=frame,
-                text="{:.2f}".format(fps),
-                org=(5, 25),
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=0.8,
-                color=(255, 255, 255),
-                thickness=2,
-                lineType=cv2.LINE_AA
-            )
-            cv2.imshow("frame", frame)
-            cv2.waitKey(1)
-        if last_index > cur_index:
-            counter += 1
-            cur_index = last_index
-        if counter % 60 == 0 and not calculated:
-            calculated = True
-            fps = 60/(time.time() - begin_time)
-            begin_time = time.time()
-        if counter % 60 != 0:
-            calculated = False
+        self._q_model = q_model
+
+    def inference(self):
+        while True:
+            if not self._q_model.empty():
+                model = self._q_model.get()
+                self._load_model(model)
+            if self._q_in.empty():
+                continue
+            frame, raw_frame, frame_id = self._q_in.get()
+            outputs = self._rknnlite.inference(inputs=[frame])
+            if self._q_out.full():
+                continue
+            self._q_out.put((outputs, raw_frame, frame_id))

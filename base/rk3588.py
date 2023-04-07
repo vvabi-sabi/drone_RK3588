@@ -1,121 +1,124 @@
 import json
-import time
+from multiprocessing import Process, Queue
 from pathlib import Path
 
-import cv2
+from rknnlite.api import RKNNLite
 
-import addons.storages as strgs
-from addons.byte_tracker import BYTETracker, draw_info, tracking
-from base import Rk3588
+from base.camera import Cam
+from base.inference import Yolov5
+from base.post_process import post_process
 
 
-CONFIG_FILE = str(Path(__file__).parent.absolute()) + "/config.json"
+CONFIG_FILE = str(Path(__file__).parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
 
-def fill_storages(
-        rk3588: Rk3588,
-        raw_img_strg: strgs.ImageStorage,
-        inf_img_strg: strgs.ImageStorage,
-        dets_strg: strgs.DetectionsStorage,
-        start_time: float
-):
-    """Fill storages with raw frames, frames with bboxes, numpy arrays with
-    detctions
-    Args
-    -----------------------------------
-    rk3588: Rk3588
-        Object of Rk3588 class for getting data after inference
-    raw_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage raw frames
-    inf_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage inferenced frames
-    dets_strg: storages.DetectionsStorage
-        Object of DetectionsStorage for numpy arrays with detctions
-    start_time: float
-        Program start time
-    -----------------------------------
-    """
-    while True:
-            output = rk3588.get_data()
-            if output is not None:
-                raw_frame, inferenced_frame, detections, frame_id = output
-                raw_img_strg.set_data(
-                    data=raw_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                inf_img_strg.set_data(
-                    data=inferenced_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                dets_strg.set_data(
-                    data=detections, # type: ignore
-                    id=frame_id,
-                    start_time=start_time
-                )
-
-
-def show_frames_localy(
-        inf_img_strg: strgs.ImageStorage,
-        start_time: float
-):
-    """Show inferenced frames with fps on device
+class Rk3588():
+    """Class for object detection on RK3588/RK3588S
     
-    Args
+    Attributes
+    ---------------------------------------------------------------------------
+    Queues
     -----------------------------------
-    inf_img_strg: storages.ImageStorage
-        Object of ImageStorage for storage inferenced frames
-    start_time: float
-        Program start time
+    _q_pre : multiprocessing.Queue
+        Queue for sending raw frames, resized frames and frames ids from
+        camera reading process to inference process
+    _q_outs : multiprocessing.Queue
+        Queue for sending inference results, raw frames and frames ids from
+        inference process to post_process process
+    _q_post : multiprocessing.Queue
+        Queue for sending raw frames, frames with bboxes, numpy array with
+        detections and frames ids from post_process process to ouput
     -----------------------------------
+    Camera
+    -----------------------------------
+    cam : camera.Cam
+        Camera object for creating recording, showing process
+    -----------------------------------
+    Inference
+    -----------------------------------
+    _yolov5 : inference.Yolov5 or inference.VariableYolov5
+        Yolov5 object for creating inference processes
+    -----------------------------------
+    Processes
+    -----------------------------------
+    _rec : multiprocessing.Process
+        Process for recording frames
+    _inf : multiprocessing.Process
+        Process for inferencing frames (recomended amount is 3 and should equal
+        post_process processes)
+    _post : multiprocessing.Process
+        Process for post processing frames (recomended amount is 3 and should
+        equal inference processes)
+    -----------------------------------
+    ---------------------------------------------------------------------------
+    
+    Methods
+    ---------------------------------------------------------------------------
+    start() : None
+        Starts all processes (recording process, inference process(es),
+        post_process process(es))
+    show() : None
+        Create cv2 window with inferenced frames (frames with bboxes on them)
+    get_data() : tuple(np.ndarray, np.ndarray, np.ndarray, int) | None
+        Returns raw frames, frames with bboxes, numpy array with detections
+        and frames ids
+    ---------------------------------------------------------------------------
     """
-    cur_index = -1
-    counter = 0
-    calculated = False
-    begin_time = time.time()
-    fps = 0
-    stored_data_amount = cfg["storages"]["stored_data_amount"]
-    while True:
-        last_index = inf_img_strg.get_last_index()
-        if cfg["debug"]["showed_frame_id"] and cur_index != last_index:
-            with open(cfg["debug"]["showed_id_file"], 'a') as f:
-                f.write(
-                    "{}\t{:.3f}\n".format(
-                        cur_index,
-                        time.time() - start_time
-                    )
-                )
-        print(
-            "cur - {} last - {}".format(
-                cur_index,
-                last_index
-            ),
-            end='\r'
+    def __init__(self):
+        self._q_pre = Queue(maxsize=cfg["inference"]["buf_size"])
+        self._q_outs = Queue(maxsize=cfg["inference"]["buf_size"])
+        self._q_post = Queue(maxsize=cfg["inference"]["buf_size"])
+        self._cam = Cam(
+            source = cfg["camera"]["source"],
+            q_in = self._q_post,
+            q_out = self._q_pre
         )
-        frame =\
-            inf_img_strg.get_data_by_index(last_index % stored_data_amount)
-        if cfg["camera"]["show"]:
-            cv2.putText(
-                img=frame,
-                text="{:.2f}".format(fps),
-                org=(5, 25),
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=0.8,
-                color=(255, 255, 255),
-                thickness=2,
-                lineType=cv2.LINE_AA
-            )
-            cv2.imshow("frame", frame)
-            cv2.waitKey(1)
-        if last_index > cur_index:
-            counter += 1
-            cur_index = last_index
-        if counter % 60 == 0 and not calculated:
-            calculated = True
-            fps = 60/(time.time() - begin_time)
-            begin_time = time.time()
-        if counter % 60 != 0:
-            calculated = False
+        self._cores=[
+            RKNNLite.NPU_CORE_0,
+            RKNNLite.NPU_CORE_1,
+            RKNNLite.NPU_CORE_2
+        ]
+        self._yolov5 = [
+            Yolov5(
+                proc = i,
+                q_in = self._q_pre,
+                q_out = self._q_outs,
+                core=self._cores[i%3]
+            ) for i in range(cfg["inference"]["inf_proc"])
+        ]
+        self._rec = Process(
+            target = self._cam.record,
+            daemon=True
+        )
+        self._inf = [
+            Process(
+                target = self._yolov5[i].inference,
+                daemon = True
+            ) for i in range(len(self._yolov5))
+        ]
+        self._post = [
+            Process(
+                target = post_process,
+                kwargs = {
+                    "q_in" : self._q_outs,
+                    "q_out" : self._q_post
+                },
+                daemon=True
+            ) for i in range(cfg["inference"]["post_proc"])
+        ]
+        
+    def start(self):
+        self._rec.start()
+        for inference in self._inf: inference.start()
+        for post_process in self._post: post_process.start()
+
+    def show(self, start_time):
+        self._cam.show(start_time)
+
+    def get_data(self):
+        if self._q_post.empty():
+            return None
+        raw_frame, inferenced_frame, detections, frame_id = self._q_post.get()
+        return(raw_frame, inferenced_frame, detections, frame_id)
