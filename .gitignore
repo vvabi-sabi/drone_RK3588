@@ -1,0 +1,20 @@
+# everywhere
+__pycache__
+.ipynb_checkpoints
+*.jpg
+*.png
+*.txt
+!install/requirements.txt
+
+#cython_bbox
+install/cython_bbox/.eggs
+install/cython_bbox/build
+install/cython_bbox/cython_bbox.egg-info
+install/cython_bbox/dist
+
+# models
+*.rknn
+*.onnx
+!models/yolov5m_leaky_352x352.rknn
+!models/yolov5s-640-640.rknn
+!models/yolov5m_leaky.rknn
