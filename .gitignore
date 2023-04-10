@@ -3,7 +3,9 @@ __pycache__
 .ipynb_checkpoints
 *.jpg
 *.png
+*.txt
 !training/requirements.txt
+!requirements_cp38-1.4.0.txt
 
 # models
 *.rknn
