@@ -3,7 +3,6 @@ __pycache__
 .ipynb_checkpoints
 *.jpg
 *.png
-*.txt
 !install/requirements.txt
 
 #cython_bbox

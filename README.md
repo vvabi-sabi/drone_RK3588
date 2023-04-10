@@ -11,7 +11,7 @@ python3 unet_onnx2rknn.py \
 ```
 ResNet
 ```
-python3 resnet18_qat.py \
+python3 resnet18.py \
         --input path-to-your-pt-model \
         --output path-where-save-rknn-model \
         --dataset path-to-txt-file-with-calibration-images-names
