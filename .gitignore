@@ -3,13 +3,7 @@ __pycache__
 .ipynb_checkpoints
 *.jpg
 *.png
-!install/requirements.txt
-
-#cython_bbox
-install/cython_bbox/.eggs
-install/cython_bbox/build
-install/cython_bbox/cython_bbox.egg-info
-install/cython_bbox/dist
+!training/requirements.txt
 
 # models
 *.rknn
