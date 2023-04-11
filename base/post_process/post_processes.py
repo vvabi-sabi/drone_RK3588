@@ -15,7 +15,7 @@ with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
 
-def post_yolov5(q_in: Queue, q_out: Queue):
+def post_yolov5(outputs, frame):
     """Overlays bboxes on frames
     Args
     -----------------------------------
@@ -26,8 +26,6 @@ def post_yolov5(q_in: Queue, q_out: Queue):
     -----------------------------------
     """
     while True:
-        outputs, raw_frame, frame_id = q_in.get()
-        frame = raw_frame.copy()
         dets = None
         data = list()
         for out in outputs:
@@ -41,31 +39,26 @@ def post_yolov5(q_in: Queue, q_out: Queue):
                 classes = classes, # type: ignore
                 scores = scores # type: ignore
             )
-        q_out.put((raw_frame, frame, dets, frame_id))
+        return frame, dets
 
-def post_unet(q_in: Queue, q_out: Queue):
+def post_unet(outputs, frame):
     alpha = 0.7
     beta = (1.0 - alpha)
     while True:
-        outputs, raw_frame, frame_id = q_in.get()
-        frame = raw_frame.copy()
         raw_mask = np.array(outputs[0][0])
         pred_mask = get_mask(raw_mask)
         #frame = np.hstack([frame, pred_mask])
         frame = cv2.addWeighted(frame, alpha, pred_mask, beta, 0.0)
-        q_out.put((raw_frame, frame, frame_id))
+        return frame
 
-def post_resnet(q_in: Queue, q_out: Queue):
+def post_resnet(outputs, frame):
     while True:
-        outputs, raw_frame, frame_id = q_in.get()
-        frame = raw_frame.copy()
         images_list = resnet_post_process(outputs)
-        
         hm.found_img = frame
         hm.imgs_list = images_list
         scale, angle = hm()
         draw_position(frame, scale, angle)
-        q_out.put((raw_frame, frame, frame_id))
+        return frame
 
 #__YOLOv5__
 def sigmoid(x):
