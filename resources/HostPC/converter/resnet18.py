@@ -99,6 +99,6 @@ if __name__ == '__main__':
     outputs = rknn.inference(inputs=[input_img])
     np.save('./pytorch_resnet18_0.npy', outputs[0])
     show_outputs(softmax(np.array(outputs[0][0])))
-    print('done')
+    print('done ')
 
     rknn.release()
