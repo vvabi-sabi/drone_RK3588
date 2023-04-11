@@ -1,1 +1,1 @@
-from .pre_process_common import pre_process
+from .pre_processes import pre_yolov5, pre_unet, pre_resnet

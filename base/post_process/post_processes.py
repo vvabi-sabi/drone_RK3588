@@ -1,18 +1,75 @@
+from multiprocessing import Queue
+
+import numpy as np
+
 import json
 from pathlib import Path
 
 import cv2
 import numpy as np
 
+from base.utils import format_dets
 
 CONFIG_FILE = str(Path(__file__).parent.parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
 
+def post_yolov5(q_in: Queue, q_out: Queue):
+    """Overlays bboxes on frames
+    Args
+    -----------------------------------
+    q_in : multiprocessing.Queue
+        Queue that data reads from
+    q_out : multiprocessing.Queue
+        Queue that data sends to
+    -----------------------------------
+    """
+    while True:
+        outputs, raw_frame, frame_id = q_in.get()
+        frame = raw_frame.copy()
+        dets = None
+        data = list()
+        for out in outputs:
+            out = out.reshape([3, -1]+list(out.shape[-2:]))
+            data.append(np.transpose(out, (2, 3, 0, 1)))
+        boxes, classes, scores = yolov5_post_process(data)
+        if boxes is not None:
+            draw(frame, boxes, scores, classes)
+            dets = format_dets(
+                boxes = boxes,
+                classes = classes, # type: ignore
+                scores = scores # type: ignore
+            )
+        q_out.put((raw_frame, frame, dets, frame_id))
+
+def post_unet(q_in: Queue, q_out: Queue):
+    alpha = 0.7
+    beta = (1.0 - alpha)
+    while True:
+        outputs, raw_frame, frame_id = q_in.get()
+        frame = raw_frame.copy()
+        raw_mask = np.array(outputs[0][0])
+        pred_mask = get_mask(raw_mask)
+        #frame = np.hstack([frame, pred_mask])
+        frame = cv2.addWeighted(frame, alpha, pred_mask, beta, 0.0)
+        q_out.put((raw_frame, frame, frame_id))
+
+def post_resnet(q_in: Queue, q_out: Queue):
+    while True:
+        outputs, raw_frame, frame_id = q_in.get()
+        frame = raw_frame.copy()
+        images_list = resnet_post_process(outputs)
+        
+        hm.found_img = frame
+        hm.imgs_list = images_list
+        scale, angle = hm()
+        draw_position(frame, scale, angle)
+        q_out.put((raw_frame, frame, frame_id))
+
+#__YOLOv5__
 def sigmoid(x):
     return x# 1 / (1 + np.exp(-x))
-
 
 def xywh2xyxy(x):
     # Convert [x, y, w, h] to [x1, y1, x2, y2]
@@ -22,7 +79,6 @@ def xywh2xyxy(x):
     y[:, 2] = x[:, 0] + x[:, 2] / 2  # bottom right x
     y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
-
 
 def process(input, mask, anchors):
 
@@ -50,7 +106,6 @@ def process(input, mask, anchors):
     box = np.concatenate((box_xy, box_wh), axis=-1)
 
     return box, box_confidence, box_class_probs
-
 
 def filter_boxes(boxes, box_confidences, box_class_probs):
     """Filter boxes with box threshold. It's a bit different with origin
@@ -82,7 +137,6 @@ def filter_boxes(boxes, box_confidences, box_class_probs):
     scores = (class_max_score* box_confidences)[_class_pos]
 
     return boxes, classes, scores
-
 
 def nms_boxes(boxes, scores):
     """Suppress non-maximal boxes.
@@ -119,7 +173,6 @@ def nms_boxes(boxes, scores):
         order = order[inds + 1]
     keep = np.array(keep)
     return keep
-
 
 def yolov5_post_process(input_data):
     masks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
@@ -161,7 +214,6 @@ def yolov5_post_process(input_data):
 
     return boxes, classes, scores
 
-
 def draw(image, boxes, scores, classes):
     """Draw the boxes on the image.
     # Argument:
@@ -197,3 +249,45 @@ def draw(image, boxes, scores, classes):
             color=(0, 0, 255),
             thickness=2
         )
+#__________________________
+
+#__UNet__
+def get_mask(raw_mask):
+    select_class_rgb_values = np.array( [[0, 0, 0], [255, 255, 255]])
+    pred_mask = np.transpose(raw_mask,(1,2,0))
+    pred_mask = reverse_one_hot(pred_mask)
+    pred_mask = colour_code_segmentation(pred_mask, select_class_rgb_values)
+    return pred_mask.astype(np.uint8)
+
+# Perform reverse one-hot-encoding on labels / preds
+def reverse_one_hot(image):
+    x = np.argmax(image, axis = -1)
+    return x
+
+# Perform colour coding on the reverse-one-hot outputs
+def colour_code_segmentation(image, label_values):
+    colour_codes = np.array(label_values)
+    x = colour_codes[image.astype(int)]
+    return x
+#__________________________
+
+#__ResNet__
+def resnet_post_process(result):
+    output = result[0].reshape(-1)
+    # softmax
+    output = np.exp(output)/sum(np.exp(output))
+    output_sorted = sorted(output, reverse=True)
+    top = output_sorted[:10]
+    images_list = [dataset.get_crop_by_id(int(cls_id)) for cls_id in top]
+    return images_list
+
+def draw_position(image, scale, angle):
+    CAM_WIDTH = 980
+    CAM_HEIGHT = 640
+    top = int((CAM_WIDTH + 10))
+    left = int((CAM_HEIGHT + 10))
+    cv2.putText(image, f'scale-{scale}, angle-{angle}',
+                    (top, left),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6, (0, 0, 255), 2)
+#____________________________

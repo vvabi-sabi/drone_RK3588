@@ -1,2 +1,1 @@
-from .post_process_common import post_process
-from .rknn_post_process import yolov5_post_process, draw
+from .post_processes import post_yolov5, post_unet, post_resnet

@@ -48,7 +48,7 @@ class Cam():
     ---------------------------------------------------------------------------
     Methods
     ---------------------------------------------------------------------------
-    _pre_process(frame: np.ndarray) : np.ndarray
+    _bgr2rgb(frame: np.ndarray) : np.ndarray
         Resizing raw frames to net size
     record() : None
         Recordes raw frames
@@ -57,8 +57,8 @@ class Cam():
     ---------------------------------------------------------------------------
     """
     def __init__(self, source: int, q_in: Queue, q_out: Queue):
-        self._q_out = q_out
         self._q_in = q_in
+        self._q_out = q_out
         self._stop_record = Value('i', 0)
         self._cap = cv2.VideoCapture(source)
         self._last_frame_id = 0
@@ -84,12 +84,12 @@ class Cam():
         self._count = 0
         self._begin = 0
 
-    def _pre_process(self, frame: Mat):
+    def _bgr2rgb(self, frame: Mat):
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        frame = cv2.resize(
-            frame,
-            (cfg["inference"]["net_size"], cfg["inference"]["net_size"])
-        )
+        # frame = cv2.resize(
+        #     frame,
+        #     (cfg["inference"]["net_size"], cfg["inference"]["net_size"])
+        # )
         return frame
 
     def record(self):
@@ -103,7 +103,7 @@ class Cam():
                     print("Camera stopped!")
                     raise SystemExit
                 raw_frame = frame.copy()
-                frame = self._pre_process(frame)
+                frame = self._bgr2rgb(frame)
                 self._q_out.put((frame, raw_frame, self._frame_id))
                 self._frame_id+=1
             self._cap.release()

@@ -1,2 +1,1 @@
-from .rknn_yolov5 import Yolov5
-from .rknn_yolov5_variable import VariableYolov5
+from .rknn_models import Yolov5, UNet, ResNet

@@ -5,8 +5,7 @@ from pathlib import Path
 from rknnlite.api import RKNNLite
 
 from base.camera import Cam
-from base.inference import Yolov5
-from base.post_process import post_process
+from base.inference import Yolov5, UNet, ResNet
 
 
 CONFIG_FILE = str(Path(__file__).parent.parent.absolute()) + "/config.json"
@@ -14,7 +13,7 @@ with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
 
-class Rk3588():
+class RK3588():
     """Class for object detection on RK3588/RK3588S
     
     Attributes
@@ -38,14 +37,14 @@ class Rk3588():
     -----------------------------------
     Inference
     -----------------------------------
-    _yolov5 : inference.Yolov5 or inference.VariableYolov5
-        Yolov5 object for creating inference processes
+    model : inference.Model or inference.VariableModel
+        Model object for creating inference processes
     -----------------------------------
     Processes
     -----------------------------------
     _rec : multiprocessing.Process
         Process for recording frames
-    _inf : multiprocessing.Process
+    _pre_inf : multiprocessing.Process
         Process for inferencing frames (recomended amount is 3 and should equal
         post_process processes)
     _post : multiprocessing.Process
@@ -80,27 +79,29 @@ class Rk3588():
             RKNNLite.NPU_CORE_1,
             RKNNLite.NPU_CORE_2
         ]
-        self._yolov5 = [
+        self.model = [
             Yolov5(
                 proc = i,
-                q_in = self._q_pre,
-                q_out = self._q_outs,
                 core=self._cores[i%3]
             ) for i in range(cfg["inference"]["inf_proc"])
         ]
-        self._rec = Process(
-            target = self._cam.record,
+        self._rec = Process( 
+            target = self._cam.record, #Camera()._pre_process(frame) <- rgb2bgr
             daemon=True
         )
-        self._inf = [
+        self._pre_inf = [ # pre_process + inf
             Process(
-                target = self._yolov5[i].inference,
+                target = self.model[i].inference,
+                kwargs = {
+                    'q_in' : self._q_pre,
+                    'q_out' : self._q_outs,
+                },
                 daemon = True
-            ) for i in range(len(self._yolov5))
+            ) for i in range(len(self.model))
         ]
         self._post = [
             Process(
-                target = post_process,
+                target = self.model[i].post_process,
                 kwargs = {
                     "q_in" : self._q_outs,
                     "q_out" : self._q_post
@@ -111,7 +112,7 @@ class Rk3588():
         
     def start(self):
         self._rec.start()
-        for inference in self._inf: inference.start()
+        for inference in self._pre_inf: inference.start()
         for post_process in self._post: post_process.start()
 
     def show(self, start_time):
@@ -120,5 +121,5 @@ class Rk3588():
     def get_data(self):
         if self._q_post.empty():
             return None
-        raw_frame, inferenced_frame, detections, frame_id = self._q_post.get()
-        return(raw_frame, inferenced_frame, detections, frame_id)
+        return self._q_post.get()
+        #return(raw_frame, inferenced_frame, detections, frame_id)

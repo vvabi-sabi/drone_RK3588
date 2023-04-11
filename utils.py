@@ -6,7 +6,7 @@ import cv2
 
 import addons.storages as strgs
 from addons.byte_tracker import BYTETracker, draw_info, tracking
-from base import Rk3588
+from base import RK3588
 
 
 CONFIG_FILE = str(Path(__file__).parent.absolute()) + "/config.json"
@@ -15,7 +15,7 @@ with open(CONFIG_FILE, 'r') as config_file:
 
 
 def fill_storages(
-        rk3588: Rk3588,
+        rk3588: RK3588,
         raw_img_strg: strgs.ImageStorage,
         inf_img_strg: strgs.ImageStorage,
         dets_strg: strgs.DetectionsStorage,

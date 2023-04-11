@@ -11,7 +11,7 @@ with open(CONFIG_FILE, 'r') as config_file:
 Mat = np.ndarray[int, np.dtype[np.generic]]
 
 
-def pre_process(frame: Mat):
+def pre_yolov5(frame: Mat):
     """Resizing raw frames from original size to net size
     Args
     -----------------------------------
@@ -25,3 +25,13 @@ def pre_process(frame: Mat):
         (cfg["inference"]["net_size"], cfg["inference"]["net_size"])
     )
     return frame
+
+def pre_unet(frame):
+    NET_SIZE = 224
+    cx, cy = int(frame.shape[0]/2), int(frame.shape[1]/2)
+    ltrb = cx - NET_SIZE, cy - NET_SIZE, cx + NET_SIZE, cy + NET_SIZE
+    return frame[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]]
+
+def pre_resnet(frame):
+    NET_SIZE = 64
+    return cv2.resize(frame, (NET_SIZE, NET_SIZE))
