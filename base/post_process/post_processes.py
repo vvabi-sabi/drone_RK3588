@@ -49,7 +49,7 @@ def post_unet(outputs, frame):
         pred_mask = get_mask(raw_mask)
         #frame = np.hstack([frame, pred_mask])
         frame = cv2.addWeighted(frame, alpha, pred_mask, beta, 0.0)
-        return frame
+        return (frame, )
 
 def post_resnet(outputs, frame):
     while True:
@@ -58,7 +58,7 @@ def post_resnet(outputs, frame):
         hm.imgs_list = images_list
         scale, angle = hm()
         draw_position(frame, scale, angle)
-        return frame
+        return (frame, )
 
 #__YOLOv5__
 def sigmoid(x):
