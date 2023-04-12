@@ -73,18 +73,18 @@ class ModelsFactory():
         print("Export rknn model")
         ret = rknnlite.load_rknn(model)
         if ret != 0:
-            print('%d. Export rknn model failed!')
+            print(f'Export {model} model failed!')
             return ret
-        print('%d. Init runtime environment')
+        print('Init runtime environment')
         ret = rknnlite.init_runtime(
                     async_mode=cfg["inference"]["async_mode"],
                     core_mask = core
                 )
         if ret != 0:
-            print('%d. Init runtime environment failed!')
+            print('Init runtime environment failed!')
             return ret
         print(f'{model} model loaded' )
-        return ret
+        return rknnlite
 
     @classmethod
     def load_processes(Class):
