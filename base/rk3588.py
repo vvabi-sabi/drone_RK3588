@@ -122,4 +122,3 @@ class RK3588():
         if self._q_post.empty():
             return None
         return self._q_post.get()
-        #return(raw_frame, inferenced_frame, detections, frame_id)

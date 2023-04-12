@@ -25,40 +25,37 @@ def post_yolov5(outputs, frame):
         Queue that data sends to
     -----------------------------------
     """
-    while True:
-        dets = None
-        data = list()
-        for out in outputs:
-            out = out.reshape([3, -1]+list(out.shape[-2:]))
-            data.append(np.transpose(out, (2, 3, 0, 1)))
-        boxes, classes, scores = yolov5_post_process(data)
-        if boxes is not None:
-            draw(frame, boxes, scores, classes)
-            dets = format_dets(
-                boxes = boxes,
-                classes = classes, # type: ignore
-                scores = scores # type: ignore
-            )
-        return frame, dets
+    dets = None
+    data = list()
+    for out in outputs:
+        out = out.reshape([3, -1]+list(out.shape[-2:]))
+        data.append(np.transpose(out, (2, 3, 0, 1)))
+    boxes, classes, scores = yolov5_post_process(data)
+    if boxes is not None:
+        draw(frame, boxes, scores, classes)
+        dets = format_dets(
+            boxes = boxes,
+            classes = classes, # type: ignore
+            scores = scores # type: ignore
+        )
+    return frame, dets
 
 def post_unet(outputs, frame):
     alpha = 0.7
     beta = (1.0 - alpha)
-    while True:
-        raw_mask = np.array(outputs[0][0])
-        pred_mask = get_mask(raw_mask)
-        #frame = np.hstack([frame, pred_mask])
-        frame = cv2.addWeighted(frame, alpha, pred_mask, beta, 0.0)
-        return (frame, )
+    raw_mask = np.array(outputs[0][0])
+    pred_mask = get_mask(raw_mask)
+    #frame = np.hstack([frame, pred_mask])
+    frame = cv2.addWeighted(frame, alpha, pred_mask, beta, 0.0)
+    return (frame, )
 
 def post_resnet(outputs, frame):
-    while True:
-        images_list = resnet_post_process(outputs)
-        hm.found_img = frame
-        hm.imgs_list = images_list
-        scale, angle = hm()
-        draw_position(frame, scale, angle)
-        return (frame, )
+    images_list = resnet_post_process(outputs)
+    hm.found_img = frame
+    hm.imgs_list = images_list
+    scale, angle = hm()
+    draw_position(frame, scale, angle)
+    return (frame, )
 
 #__YOLOv5__
 def sigmoid(x):
