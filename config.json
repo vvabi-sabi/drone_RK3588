@@ -33,7 +33,13 @@
             "car",
             "motorcycle",
             "airplane",
-            "bus",
-        ]
+            "bus"
+            ]
+    },
+    "storages": {
+        "state": true,
+        "stored_data_amount": 300,
+        "dets_amount": 100,
+        "frames_delay": 10
     }
 }
