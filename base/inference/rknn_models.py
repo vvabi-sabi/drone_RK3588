@@ -103,10 +103,11 @@ class ModelsFactory():
             q_out.put((outputs, raw_frame, frame_id))
     
     def post_process(self, q_in, q_out):
-        outputs, raw_frame, frame_id = q_in.get()
-        frame = raw_frame.copy()
-        results = self._post_process(outputs, frame)
-        q_out.put((raw_frame, *results, frame_id))
+        while True:
+            outputs, raw_frame, frame_id = q_in.get()
+            frame = raw_frame.copy()
+            results = self._post_process(outputs, frame)
+            q_out.put((raw_frame, *results, frame_id))
 
 
 class Yolov5(ModelsFactory):

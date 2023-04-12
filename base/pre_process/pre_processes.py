@@ -27,11 +27,11 @@ def pre_yolov5(frame: Mat):
     return frame
 
 def pre_unet(frame):
-    NET_SIZE = 224
+    NET_SIZE = cfg["inference"]["net_size"]
     cx, cy = int(frame.shape[0]/2), int(frame.shape[1]/2)
     ltrb = cx - NET_SIZE, cy - NET_SIZE, cx + NET_SIZE, cy + NET_SIZE
     return frame[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]]
 
 def pre_resnet(frame):
-    NET_SIZE = 64
+    NET_SIZE = cfg["inference"]["net_size"]
     return cv2.resize(frame, (NET_SIZE, NET_SIZE))
