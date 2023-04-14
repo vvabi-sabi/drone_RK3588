@@ -52,10 +52,10 @@ def post_unet(outputs, frame):
     return (frame, )
 
 def post_resnet(outputs, frame):
-    images_list = resnet_post_process(outputs)
-    hm.found_img = frame
-    hm.imgs_list = images_list
-    scale, angle = hm()
+    top_10 = resnet_post_process(outputs)
+    #hm.found_img = frame
+    #hm.imgs_list = images_list
+    scale, angle = 1., 0. #hm()
     draw_position(frame, scale, angle)
     return (frame, )
 
@@ -270,8 +270,8 @@ def resnet_post_process(result):
     output = np.exp(output)/sum(np.exp(output))
     output_sorted = sorted(output, reverse=True)
     top = output_sorted[:10]
-    images_list = [dataset.get_crop_by_id(int(cls_id)) for cls_id in top]
-    return images_list
+    #images_list = [dataset.get_crop_by_id(int(cls_id)) for cls_id in top]
+    return top #images_list
 
 def draw_position(image, scale, angle):
     CAM_WIDTH = 980
