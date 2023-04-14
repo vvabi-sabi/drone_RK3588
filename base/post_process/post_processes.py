@@ -43,8 +43,10 @@ def post_yolov5(outputs, frame):
 def post_unet(outputs, frame):
     alpha = 0.7
     beta = (1.0 - alpha)
+    frame_shape = (frame.shape[1], frame.shape[0])
     raw_mask = np.array(outputs[0][0])
     pred_mask = get_mask(raw_mask)
+    pred_mask = cv2.resize(pred_mask, frame_shape, interpolation=cv2.INTER_CUBIC)
     #frame = np.hstack([frame, pred_mask])
     frame = cv2.addWeighted(frame, alpha, pred_mask, beta, 0.0)
     return (frame, )
