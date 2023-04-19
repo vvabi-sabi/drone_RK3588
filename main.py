@@ -11,10 +11,6 @@ CONFIG_FILE = str(Path(__file__).parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
-# raw_frames_storage = RawFrStrg()
-# inferenced_frames_storage = InfFrStrg()
-# detections_storage = DetectStrg()
-
 
 def main():
     """Runs inference and addons (if mentions)
@@ -36,7 +32,7 @@ def main():
     inferenced_frames_storage = strgs.ImageStorage(
         strgs.StoragePurpose.INFERENCED_FRAME
     )
-    detections_storage = strgs.DetectionsStorage()
+    detections_storage = None #strgs.DetectionsStorage()
     fill_thread = Thread(
         target=fill_storages,
         kwargs={
@@ -58,9 +54,12 @@ def main():
     except Exception as e:
         print("Main exception: {}".format(e))
     finally:
-        raw_frames_storage.clear_buffer()
-        inferenced_frames_storage.clear_buffer()
-        detections_storage.clear_buffer()
+        if raw_frames_storage:
+            raw_frames_storage.clear_buffer()
+        if inferenced_frames_storage:
+            inferenced_frames_storage.clear_buffer()
+        if detections_storage:
+            detections_storage.clear_buffer()
 
 
 if __name__ == "__main__":

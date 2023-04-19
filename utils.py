@@ -15,10 +15,10 @@ with open(CONFIG_FILE, 'r') as config_file:
 
 def fill_storages(
         rk3588: RK3588,
-        raw_img_strg: strgs.ImageStorage,
-        inf_img_strg: strgs.ImageStorage,
-        dets_strg: strgs.DetectionsStorage,
-        start_time: float
+        raw_img_strg: strgs.ImageStorage=None,
+        inf_img_strg: strgs.ImageStorage=None,
+        dets_strg: strgs.DetectionsStorage=None, # YOLOv5
+        start_time: float=None
 ):
     """Fill storages with raw frames, frames with bboxes, numpy arrays with
     detctions
@@ -36,25 +36,18 @@ def fill_storages(
         Program start time
     -----------------------------------
     """
+    storages = [strg for strg in [dets_strg, inf_img_strg, raw_img_strg] if strg is not None]
     while True:
             output = rk3588.get_data()
             if output is not None:
-                raw_frame, inferenced_frame, detections, frame_id = output
-                raw_img_strg.set_data(
-                    data=raw_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                inf_img_strg.set_data(
-                    data=inferenced_frame,
-                    id=frame_id,
-                    start_time=start_time
-                )
-                dets_strg.set_data(
-                    data=detections, # type: ignore
-                    id=frame_id,
-                    start_time=start_time
-                )
+                #print('output', output)
+                frame_id = output.pop()
+                for strg in storages:
+                    strg.set_data(
+                        data=output.pop(),
+                        id=frame_id,
+                        start_time=start_time
+                    )
 
 
 def show_frames_localy(

@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 
 from base.utils import format_dets
+from datasets import resnet_dataset
 
 CONFIG_FILE = str(Path(__file__).parent.parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
@@ -52,10 +53,10 @@ def post_unet(outputs, frame):
     return (frame, )
 
 def post_resnet(outputs, frame):
-    top_10 = resnet_post_process(outputs)
-    #hm.found_img = frame
-    #hm.imgs_list = images_list
-    scale, angle = 1., 0. #hm()
+    images_list = resnet_post_process(outputs)
+    hm.found_img = frame
+    hm.imgs_list = images_list
+    scale, angle = hm()
     draw_position(frame, scale, angle)
     return (frame, )
 
@@ -270,8 +271,8 @@ def resnet_post_process(result):
     output = np.exp(output)/sum(np.exp(output))
     output_sorted = sorted(output, reverse=True)
     top = output_sorted[:10]
-    #images_list = [dataset.get_crop_by_id(int(cls_id)) for cls_id in top]
-    return top #images_list
+    images_list = [resnet_dataset.get_crop_by_id(int(cls_id)) for cls_id in top]
+    return images_list
 
 def draw_position(image, scale, angle):
     CAM_WIDTH = 980
@@ -282,4 +283,95 @@ def draw_position(image, scale, angle):
                     (top, left),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.6, (0, 0, 255), 2)
+
+
+class SiftData:
+    
+    def __init__(self, kpts, desc):
+        self.kp = kpts
+        self.desc = desc
+
+class Homograpy_Match:
+    
+    def __init__(self):
+        self.sift = cv2.SIFT_create()
+        self.index_params = dict(algorithm = 0, trees = 5)
+        self.search_params = dict()
+        self.flann = cv2.FlannBasedMatcher(self.index_params, self.search_params)
+        self.dd = 0.6 #descriptors distance coeff
+        self.img = None
+        self.source_imgs = []
+        
+        self.img_data = None
+        self.sorce_data_list = []
+    
+    @property
+    def found_img(self):
+        return self.img
+    
+    @found_img.setter
+    def found_img(self, np_img):
+        self.img = np_img
+    
+    @property
+    def imgs_list(self):
+        return self.source_imgs
+    
+    @imgs_list.setter
+    def imgs_list(self, imgs_list):
+        self.source_imgs = imgs_list
+    
+    def find_most_simular(self):
+        kp_img, desc_img = self.sift.detectAndCompute(self.img , None)
+        self.img_data = SiftData(kp_img, desc_img)
+        index = 0
+        matrix = 0
+        for i, img in enumerate(self.source_imgs):
+            kp_img, desc_img = self.sift.detectAndCompute(img , None)
+            self.sorce_data_list.append(SiftData(kp_img, desc_img))
+            try:
+                matrix = self.get_matrix(i)
+                index = i
+            except:
+                continue
+
+        return index, matrix
+    
+    def get_matrix(self, index):
+        matches = self.flann.knnMatch(self.img_data.desc, 
+                                 self.sorce_data_list[index].desc, k=2)
+        good_points = []
+        for m, n in matches:
+            if(m.distance < self.dd*n.distance):
+                good_points.append(m)
+        query_pts = np.float32([self.img_data.kp[m.queryIdx].pt for m in good_points]).reshape(-1, 1, 2)
+        train_pts = np.float32([self.sorce_data_list[index].kp[m.trainIdx].pt for m in good_points]).reshape(-1, 1, 2)
+        matrix, _ = cv2.findHomography(query_pts, train_pts, cv2.RANSAC, 5.0) #ошибка
+        return matrix
+    
+    def get_angle(self, matrix):
+        a = 0 
+        l = 1
+        l =  np.nanmax([np.sqrt(np.absolute(matrix[0][0])*(matrix[1][1]) -(matrix[0][1])*(matrix[1][0]) ), 
+                        np.sqrt((matrix[0][0])*(matrix[0][0]) +(matrix[0][1])*(matrix[0][1]) ),
+                        np.sqrt((matrix[1][0])*(matrix[1][0]) +(matrix[1][1])*(matrix[1][1]) ) ])
+        l = np.round(l,2)
+        matrix /= l
+        for j in range(2):
+            if matrix[j][j] > 1:
+                matrix[j][j] = 1
+            a += -1* np.arccos(np.round(matrix[j][j],3))
+        a *= 180/np.pi
+        a /= 2 
+        return np.round(a,2)
+    
+    def __call__(self):
+        index, matrix = self.find_most_simular()
+        if type(matrix) != type(np.array(0)):
+            return ': не найден', ': nan'
+        angle = self.get_angle(matrix)
+        return index, angle
+
+hm = Homograpy_Match()
+
 #____________________________
