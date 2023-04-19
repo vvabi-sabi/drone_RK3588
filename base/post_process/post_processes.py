@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from base.utils import format_dets
-from datasets import resnet_dataset
+from .datasets import resnet_dataset
 
 CONFIG_FILE = str(Path(__file__).parent.parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
@@ -275,15 +275,17 @@ def resnet_post_process(result):
     return images_list
 
 def draw_position(image, scale, angle):
-    CAM_WIDTH = 980
-    CAM_HEIGHT = 640
-    top = int((CAM_WIDTH + 10))
-    left = int((CAM_HEIGHT + 10))
-    cv2.putText(image, f'scale-{scale}, angle-{angle}',
-                    (top, left),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6, (0, 0, 255), 2)
-
+    width = image.shape[1]
+    height = image.shape[0]
+    top = int((height/2))
+    left = int(50)
+    cv2.putText(img=image,
+                text=f'scale-{scale}, angle-{angle}',
+                org=(top, left),
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                fontScale=0.6,
+                color=(0, 0, 255),
+                thickness=2)
 
 class SiftData:
     
@@ -368,7 +370,7 @@ class Homograpy_Match:
     def __call__(self):
         index, matrix = self.find_most_simular()
         if type(matrix) != type(np.array(0)):
-            return ': не найден', ': nan'
+            return ': nan', ': nan'
         angle = self.get_angle(matrix)
         return index, angle
 
