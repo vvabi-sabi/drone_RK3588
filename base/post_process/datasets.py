@@ -52,7 +52,7 @@ class ResNetDataset():
 
 input_size = 64
 segment_number = 25
-path = '/home/firefly/Firefly_ROC-RK3588S-PC/rknpu2_python3/modules/shlyuz.jpg'
+path = '/path/to/img/file.jpg'
 
 resnet_dataset = ResNetDataset(path, input_size, segment_number)
 
