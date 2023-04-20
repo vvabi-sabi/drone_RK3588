@@ -4,7 +4,7 @@ from pathlib import Path
 
 import cv2
 
-import base.storages as strgs
+import addons.storages as strgs
 from base import RK3588
 
 

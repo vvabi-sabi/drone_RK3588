@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from threading import Thread
 
-import base.storages as strgs
+import addons.storages as strgs
 from base import RK3588
 from utils import fill_storages, show_frames_localy
 
