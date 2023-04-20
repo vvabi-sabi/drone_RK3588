@@ -1,15 +1,11 @@
 from multiprocessing import Queue
-
-import numpy as np
-
 import json
 from pathlib import Path
-
 import cv2
 import numpy as np
 
 from base.utils import format_dets
-from .maps import resnet_map
+from .maps import resnet_map, autoen_map
 
 CONFIG_FILE = str(Path(__file__).parent.parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
@@ -54,7 +50,7 @@ def post_unet(outputs, frame):
 
 def post_resnet(outputs, frame):
     y_step_number = 25 # crop number
-    height_dataset_photo = 200
+    z_dataset_photo = 200
     images_list = resnet_post_process(outputs)
     hm.found_img = frame
     hm.imgs_list = images_list
@@ -67,9 +63,34 @@ def post_resnet(outputs, frame):
     draw_position(frame, index, angle)
     x = index//y_step_number
     y = index%y_step_number
-    z = scale*height_dataset_photo
+    z = scale*z_dataset_photo
     coords = np.array([x, y, z, angle])
     return frame, coords
+
+def post_autoencoder(outputs, frame):
+	z_dataset_photo = 200
+	output = outputs[0]
+	#index = autoen_map.current position()
+	indexes = autoen_map.get_reference_indexes() # [96200 x 1000] or [324 x 1000]
+	index
+	reference_img, reference_coord = autoen_map.get_geo_data(indexes)
+	w = reference_img @ output # Yge * y
+	Wth = get_wth(w)
+	xy = reference_coord.T @ Wth # Xge * Wth
+	# determine the angle of rotation and rotate the source photo
+	
+	vec = autoen_map.vectors[autoen_map.found_index]
+	angle = find_angle(outputs, vec)
+	#found_angle = find_angle(raw_source, vec) # vec - real_photo
+	#rotate_result, _ = rotate_image(raw_source, angle)
+	# determine the scale of real_photo and resize
+	scale = find_scale(outputs, vec) # vec - real_photo
+	#found_scale = find_scale(rotate_result, vec) # vec - real_photo
+	#scale_result, _ = scale_image(rotate_result, found_scale)
+	
+	z = scale*z_dataset_photo
+	coords = np.array([xy[0], xy[1], z, angle])
+	return frame, coords
 
 #__YOLOv5__
 def sigmoid(x):
@@ -388,3 +409,74 @@ class Homograpy_Match:
 hm = Homograpy_Match()
 
 #____________________________
+
+____AutoEncoder____
+def get_wth(w):
+	std_w = np.std(w)
+	max_w = w.max()
+	# discard outliers
+	limit = max_w - std_w
+	w[w<limit] = 0
+	summ = w.sum()
+	return w/summ
+
+def rotate_imgs_list(raw):
+    img_list = []
+    angl_list = []
+    for angle in range(0, 360, 5):
+        rot_img, _ = rotate_image(raw, angle)
+        rot_crop = crop_image(rot_img)
+        img_list.append(rot_crop)
+        angl_list.append(angle)
+    return img_list, angl_list
+
+def find_angle(img, vec):
+    cos_max = 0.1
+    angle = 0
+    vectors = []
+    img_list, angl_list = rotate_imgs_list(img)
+    angl_list = np.array(angl_list)
+    for rt_img in img_list:
+        rt_img = train_dataset.transform(rt_img)
+        rt_img = rt_img[None, :, :, :]
+        rt_img = rt_img.cuda()
+        vector = model.encode(rt_img)
+        vector = vector.cpu().detach().numpy()
+        vectors.append(vector)
+    vectors = np.array(vectors)
+    w = vectors @ vec # Alpha_ge * vec
+    Wth = get_wth(w)
+    # angle 
+    found_angle = angl_list.T @ Wth # Angles * Wth
+    return round(found_angle, 2)
+
+def scale_imgs_list(raw):
+    img_list = []
+    scales_list = []
+    scales = [0.7, 0.9, 1.1, 1.3, 1.5, 1.7]
+    for scale in scales:
+        scl_img, _ = scale_image(raw, scale)
+        scl_crop = crop_image(scl_img)
+        img_list.append(scl_crop)
+        scales_list.append(scale)
+    return img_list, scales_list
+
+def find_scale(img, vec):
+    cos_max = 0.1
+    scale = 1
+    vectors = []
+    img_list, scale_list = scale_imgs_list(img)
+    scale_list = np.array(scale_list)
+    for scl_img in img_list:
+        scl_img = train_dataset.transform(scl_img)
+        scl_img = scl_img[None, :, :, :]
+        scl_img = scl_img.cuda()
+        vector = model.encode(scl_img)
+        vector = vector.cpu().detach().numpy()
+        vectors.append(vector)
+    vectors = np.array(vectors)
+    w = vectors @ vec # Scale_ge * vec
+    Wth = get_wth(w)
+    # scale 
+    found_scale = scale_list.T @ Wth # Scales * Wth
+    return round(found_scale,2)  

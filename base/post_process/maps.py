@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 class ResNetMap():
     
@@ -49,6 +50,33 @@ class ResNetMap():
     def __len__(self):
         return len(self.cls_crops)
 
+class AutoEncoderMap():
+	
+	def __init__(self, y_step_number=320 , vectors_path='test.npz'):
+		self.y_step_number = y_step_number
+		self.found_index = None
+		self.square = 9*9 #the area around the position
+		self.vectors = np.load(vectors_path)
+		self.coords = np.array([[n//train_dataset.y_step_number, n%train_dataset.y_step_number] for n in range(len(self.vectors))])
+		self.reference_indexes = np.arange(0, len(self.vectors), 1, dtype=int) 
+	
+	def get_reference_indexes(self):
+		indexes = []
+		if self.found_index is None:
+			return self.reference_indexes
+		for step in range(-4, 5):
+			x_ind = self.found_indx - step*self.y_step_number
+			y_ind = [i for i in range((x_ind - 4), (x_ind + 5))] #index%train_dataset.y_step_number
+			indexes.append(y_ind)
+		indexes = np.array(indexes)
+		self.reference_indexes = np.reshape(indexes, (self.square, 1))
+		return self.reference_indexes
+	
+	def get_geo_data(self, reference_indexes):
+		reference_img = self.vectors[reference_indexes] # Yge
+		reference_coord = self.coords[reference_indexes] # Xge
+		reference_img = np.reshape(reference_img, (self.square, 1000))
+		reference_coord = np.reshape(reference_coord, (self.square, 2))
 
 input_size = 64
 segment_number = 25
@@ -56,3 +84,4 @@ path = '/path/to/img/map_file.jpg'
 
 resnet_map = ResNetMap(path, input_size, segment_number)
 
+autoen_map = AutoEncoderMap()
