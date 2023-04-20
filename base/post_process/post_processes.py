@@ -53,12 +53,19 @@ def post_unet(outputs, frame):
     return (frame, )
 
 def post_resnet(outputs, frame):
+    y_step_number = 25 # crop number
+    height_dataset_photo = 200
     images_list = resnet_post_process(outputs)
     hm.found_img = frame
     hm.imgs_list = images_list
-    scale, angle = hm()
-    draw_position(frame, scale, angle)
-    return (frame, )
+    index, angle = hm()
+    scale = 1
+    draw_position(frame, index, angle)
+    x = index//y_step_number
+    y = index%y_step_number
+    z = scale*height_dataset_photo
+    coords = [x, y, z, angle]
+    return frame, coords
 
 #__YOLOv5__
 def sigmoid(x):
@@ -73,7 +80,7 @@ def xywh2xyxy(x):
     y[:, 3] = x[:, 1] + x[:, 3] / 2  # bottom right y
     return y
 
-def process(input, mask, anchors):
+def detect(input, mask, anchors):
 
     anchors = [anchors[i] for i in mask]
     grid_h, grid_w = map(int, input.shape[0:2])
@@ -174,7 +181,7 @@ def yolov5_post_process(input_data):
 
     boxes, classes, scores = [], [], []
     for input, mask in zip(input_data, masks):
-        b, c, s = process(input, mask, anchors)
+        b, c, s = detect(input, mask, anchors)
         b, c, s = filter_boxes(b, c, s)
         boxes.append(b)
         classes.append(c)
