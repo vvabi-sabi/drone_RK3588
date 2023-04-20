@@ -58,8 +58,9 @@ def post_resnet(outputs, frame):
     images_list = resnet_post_process(outputs)
     hm.found_img = frame
     hm.imgs_list = images_list
-    index, angle = hm()
-    scale = 1
+    index, scale, angle = hm()
+    if type(scale) == type(': nan'):
+        scale = 1
     draw_position(frame, index, angle)
     x = index//y_step_number
     y = index%y_step_number
@@ -287,7 +288,7 @@ def draw_position(image, scale, angle):
     top = int((height/2))
     left = int(50)
     cv2.putText(img=image,
-                text=f'scale-{scale}, angle-{angle}',
+                text=f'index-{scale}, angle-{angle}',
                 org=(top, left),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=0.6,
@@ -372,14 +373,14 @@ class Homograpy_Match:
             a += -1* np.arccos(np.round(matrix[j][j],3))
         a *= 180/np.pi
         a /= 2 
-        return np.round(a,2)
+        return l, np.round(a,2)
     
     def __call__(self):
         index, matrix = self.find_most_simular()
         if type(matrix) != type(np.array(0)):
-            return ': nan', ': nan'
-        angle = self.get_angle(matrix)
-        return index, angle
+            return ': nan', ': nan',  ': nan'
+        scale, angle = self.get_angle(matrix)
+        return index, scale, angle
 
 hm = Homograpy_Match()
 
