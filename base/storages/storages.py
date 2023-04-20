@@ -104,9 +104,9 @@ class Storage():
 
     def set_data(self, data: np.ndarray, id: int, start_time: float):
         data_index = id % self._DATA_AMOUNT # type: ignore
-        if data is not None:
+        try: #data is not None:
             self._storage[data_index][:len(data),:] = data
-        else:
+        except:
             self._storage[data_index][:] = data
         if cfg["debug"]["filled_frame_id"] and self.storage_name == 2:
             with open(cfg["debug"]["filled_id_file"], 'a') as f:
@@ -158,7 +158,7 @@ class ImageStorage(Storage):
 
 class DetectionsStorage(Storage):
     """Child class of Storage class specifically for detections numpy array"""
-    def __init__(self):
+    def __init__(self, storage_name: StoragePurpose):
         super().__init__(
             storage_name = StoragePurpose.DETECTIONS,
             data_size = (cfg["storages"]["dets_amount"], 6),
@@ -169,10 +169,10 @@ class DetectionsStorage(Storage):
 
 class CoordinatesStorage(Storage):
     """Child class of Storage class specifically for coordinates numpy array"""
-    def __init__(self):
+    def __init__(self, storage_name: StoragePurpose):
         super().__init__(
             storage_name = StoragePurpose.COORDINATES,
-            data_size = (cfg["storages"]["dets_amount"], 6),
+            data_size = (4, ),
             data_amount = cfg["storages"]["stored_data_amount"],
             data_type = np.float32
         )

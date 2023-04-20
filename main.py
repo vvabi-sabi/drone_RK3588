@@ -33,7 +33,7 @@ def main():
         strgs.StoragePurpose.INFERENCED_FRAME
     )
     detections_storage = None #strgs.DetectionsStorage(strgs.StoragePurpose.DETECTIONS)
-    coordinates_storage = strgs.CoordinatesStorage(strgs.StoragePurpose.DETECTIONS)
+    coordinates_storage = strgs.CoordinatesStorage(strgs.StoragePurpose.COORDINATES)
     fill_thread = Thread(
         target=fill_storages,
         kwargs={

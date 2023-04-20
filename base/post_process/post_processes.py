@@ -60,13 +60,15 @@ def post_resnet(outputs, frame):
     hm.imgs_list = images_list
     index, scale, angle = hm()
     if type(scale) == type(': nan'):
-        x, y = 0, 0
-        scale = 1
+        index = 0.
+        x, y = 0., 0.
+        scale = 1.
+        angle = 0.
     draw_position(frame, index, angle)
     x = index//y_step_number
     y = index%y_step_number
     z = scale*height_dataset_photo
-    coords = [x, y, z, angle]
+    coords = np.array([x, y, z, angle])
     return frame, coords
 
 #__YOLOv5__
@@ -362,7 +364,7 @@ class Homograpy_Match:
     
     def get_angle(self, matrix):
         a = 0 
-        l = 1
+        l = 1 # - zoom
         l =  np.nanmax([np.sqrt(np.absolute(matrix[0][0])*(matrix[1][1]) -(matrix[0][1])*(matrix[1][0]) ), 
                         np.sqrt((matrix[0][0])*(matrix[0][0]) +(matrix[0][1])*(matrix[0][1]) ),
                         np.sqrt((matrix[1][0])*(matrix[1][0]) +(matrix[1][1])*(matrix[1][1]) ) ])
@@ -379,7 +381,7 @@ class Homograpy_Match:
     def __call__(self):
         index, matrix = self.find_most_simular()
         if type(matrix) != type(np.array(0)):
-            return ': nan', ': nan',  ': nan'
+            return ': nan', ': nan', ': nan'
         scale, angle = self.get_angle(matrix)
         return index, scale, angle
 
