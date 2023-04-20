@@ -12,9 +12,9 @@ def get_R(alpha):
     return M
 
 def show_direction(image, t, M):
-    line_thickness = 3
+    line_thickness = 1
     cx, cy = t
-    triangle = np.array([[-5, 5], [5, 5], [0, -8]]).T
+    triangle = np.array([[-7, 7], [7, 7], [0, -9]]).T
 
     triangle_rot = M@triangle
     triangle = triangle_rot.T
