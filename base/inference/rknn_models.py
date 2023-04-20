@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 from rknnlite.api import RKNNLite
 
-from base.pre_process import pre_yolov5, pre_unet, pre_resnet
-from base.post_process import post_yolov5, post_unet, post_resnet
+from base.pre_process import pre_yolov5, pre_unet, pre_resnet, pre_autoencoder
+from base.post_process import post_yolov5, post_unet, post_resnet, post_autoencoder
 
 ROOT = Path(__file__).parent.parent.parent.absolute()
 MODELS = str(ROOT) + "/models/"
@@ -94,6 +94,8 @@ class ModelsFactory():
             return pre_unet, post_unet
         elif Class.__name__ == 'ResNet':
             return pre_resnet, post_resnet
+        elif Class.__name__ == 'AutoEncoder':
+            return pre_autoencoder, post_autoencoder
 
     def inference(self, q_in, q_out):
         while True:
@@ -118,3 +120,7 @@ class UNet(ModelsFactory):
 
 class ResNet(ModelsFactory):
     pass
+
+class AutoEncoder(ModelsFactory):
+    pass
+

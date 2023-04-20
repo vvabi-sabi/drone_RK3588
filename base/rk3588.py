@@ -5,7 +5,7 @@ from pathlib import Path
 from rknnlite.api import RKNNLite
 
 from base.camera import Cam
-from base.inference import Yolov5, UNet, ResNet
+from base.inference import Yolov5, UNet, ResNet, AutoEncoder
 from addons.odometry import mapping
 
 
