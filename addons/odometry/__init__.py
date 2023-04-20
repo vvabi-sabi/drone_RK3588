@@ -1,1 +1,1 @@
-from .odometry import Odometry
+from .odometry import mapping

@@ -5,12 +5,6 @@ from kalman import Kalman
 
 #https://github.com/uoip/monoVO-python
 
-STAGE_FIRST_FRAME = 0
-STAGE_SECOND_FRAME = 1
-STAGE_DEFAULT_FRAME = 2
-kMinNumFeature = 1500
-
-
 def get_R(alpha):
 	return np.array([[0][0][0]])
 
@@ -34,19 +28,7 @@ def show_direction(image, t, Rt):
 					(np.random.randint(255), np.random.randint(255), np.random.randint(255)), thickness=line_thickness)
 
 
-def run(q_in):
-	width = 1241.0
-	height = 376.0
-	fx = 718.8560
-	fy = 718.8560
-	cx = 607.1928
-	cy = 185.2157
-
-	annotations = '/home/xxx/datasets/KITTI_odometry_poses/00.txt'
-	
-	vo = VisualOdometry(camera=cam,
-						annotations=annotations)
-	
+def mapping(q_in):
 	dt = 0.1
 	# Q
 	GPS     = 11.7*8.8*dt**2  # assume 8.8m/s2 as maximum acceleration, forcing the vehicle
@@ -86,7 +68,8 @@ def run(q_in):
 		draw_x, draw_y = int(x), int(y)
 
 		z_color = int(z*255/300)
-		cv2.circle(traj, (draw_x,draw_y), 1, (z_color,255-z_color,255), 2)
+		#cv2.circle(traj, (draw_x,draw_y), 1, (z_color,255-z_color,255), 2)
+		cv2.circle(traj, (draw_x,draw_y), 1, (frame_id/1000,255-frame_id/1000,255), 2)
 		cv2.rectangle(traj, (10, 20), (600, 60), (0,0,0), -1)
 		text = "Coordinates: x=%2fm y=%2fm z=%2fm"%(x,y,z)
 		cv2.putText(traj, text, (20,40), cv2.FONT_HERSHEY_PLAIN, 1, (255,255,255), 1, 8)
@@ -100,4 +83,4 @@ def run(q_in):
 
 
 if __name__ == '__main__':
-	run()	
+	mapping()	

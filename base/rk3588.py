@@ -6,6 +6,7 @@ from rknnlite.api import RKNNLite
 
 from base.camera import Cam
 from base.inference import Yolov5, UNet, ResNet
+from addons.odometry import mapping
 
 
 CONFIG_FILE = str(Path(__file__).parent.parent.absolute()) + "/config.json"
@@ -69,51 +70,48 @@ class RK3588():
         self._q_pre = Queue(maxsize=cfg["inference"]["buf_size"])
         self._q_outs = Queue(maxsize=cfg["inference"]["buf_size"])
         self._q_post = Queue(maxsize=cfg["inference"]["buf_size"])
-        self._cam = Cam(
-            source = cfg["camera"]["source"],
-            q_in = self._q_post,
-            q_out = self._q_pre
-        )
-        self._cores=[
-            RKNNLite.NPU_CORE_0,
-            RKNNLite.NPU_CORE_1,
-            RKNNLite.NPU_CORE_2
-        ]
-        self.model = [
-            ResNet(
-                proc = i,
-                core=self._cores[i%3]
-            ) for i in range(cfg["inference"]["inf_proc"])
-        ]
-        self._rec = Process( 
-            target = self._cam.record, #Camera()._pre_process(frame) <- rgb2bgr
-            daemon=True
-        )
-        self._pre_inf = [ # pre_process + inf
-            Process(
-                target = self.model[i].inference,
-                kwargs = {
-                    'q_in' : self._q_pre,
-                    'q_out' : self._q_outs,
-                },
-                daemon = True
-            ) for i in range(len(self.model))
-        ]
-        self._post = [
-            Process(
-                target = self.model[i].post_process,
-                kwargs = {
-                    "q_in" : self._q_outs,
-                    "q_out" : self._q_post
-                },
-                daemon=True
-            ) for i in range(cfg["inference"]["post_proc"])
-        ]
+        self._cam = Cam(source = cfg["camera"]["source"],
+                        q_in = self._q_post,
+                        q_out = self._q_pre
+                )
+        self._cores=[RKNNLite.NPU_CORE_0,
+                     RKNNLite.NPU_CORE_1,
+                     RKNNLite.NPU_CORE_2
+                    ]
+        self.model = [ResNet(proc=i,
+                             core=self._cores[i%3]
+                             )
+                             for i in range(cfg["inference"]["inf_proc"])
+                    ]
+        self._rec = Process(target=self._cam.record, #Camera()._pre_process(frame) <- rgb2bgr
+                            daemon=True
+                            )
+        self._pre_inf = [Process(target=self.model[i].inference, # pre_process + inf
+                                 kwargs={'q_in' : self._q_pre,
+                                         'q_out' : self._q_outs,
+                                        },
+                                 daemon=True
+                                )
+                                for i in range(len(self.model))
+                        ]
+        self._post = [Process(target=self.model[i].post_process,
+                              kwargs={"q_in" : self._q_outs,
+                                      "q_out" : self._q_post
+                                      },
+                              daemon=True
+                              )
+                              for i in range(cfg["inference"]["post_proc"])
+                    ]
+        self._map = Process(target=mapping,
+                            kwargs={"q_in" : self._q_post},
+                            daemon=True
+                            )
         
     def start(self):
         self._rec.start()
         for inference in self._pre_inf: inference.start()
         for post_process in self._post: post_process.start()
+        self._map.start()
 
     def show(self, start_time):
         self._cam.show(start_time)
