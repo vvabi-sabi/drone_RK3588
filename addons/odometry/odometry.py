@@ -6,28 +6,27 @@ from .kalman import Kalman
 #https://github.com/uoip/monoVO-python
 
 def get_R(alpha):
-	return np.array([[0],[0],[0]])
+    M = np.array([[np.cos(np.pi*alpha/180), np.sin(np.pi*alpha/180)],
+         [-np.sin(np.pi*alpha/180), np.cos(np.pi*alpha/180)]
+        ])
+    return M
 
-def show_direction(image, t, Rt):
-    r = 50
-    alpha = 50
-    if Rt is None:
-        return
-    R = Rt[:2, :2]
-    x1, y1 = r*np.cos(np.pi*alpha/180+np.pi/2), r*np.sin(np.pi*alpha/180+np.pi/2)
-    x2, y2 = r*np.cos(np.pi*alpha/180-np.pi/2), -r*np.sin(np.pi*alpha/180-np.pi/2)
-    points = np.array([[x1, y1],[x2, y2]])
-    r_points = []
-    r_points.append(R @ points[0])
-    r_points.append(R @ points[1])
-    r_points = np.array(r_points)
-    r_points[0] += t
-    r_points[1] += t
-    line_thickness = 2
-    cv2.line(image, (int(r_points[0][0]),
-		     int(r_points[0][1])), (int(r_points[1][0]), int(r_points[1][1])), 
-			 (np.random.randint(255), np.random.randint(255), np.random.randint(255)),
-			 thickness=line_thickness)
+def show_direction(image, t, M):
+    line_thickness = 3
+    cx, cy = t
+    triangle = np.array([[-5, 5], [5, 5], [0, -8]]).T
+
+    triangle_rot = M@triangle
+    triangle = triangle_rot.T
+    triangle[:,0] += cx
+    triangle[:,1] += cy
+    points = [[0,1], [0,2], [1,2]]
+    for point in points:
+        cv2.line(image, (int(triangle[point[0]][0]),int(triangle[point[0]][1])),
+                        (int(triangle[point[1]][0]),int(triangle[point[1]][1])),
+                 (0, 0, 255),
+                 thickness=line_thickness
+                )
 
 
 dt = 0.1
@@ -71,7 +70,7 @@ def mapping(q_in):
 		cv2.rectangle(traj, (10, 20), (600, 60), (0,0,0), -1)
 		text = "Coordinates: x={:.2f}m y={:.2f}m z={:.2f}m".format(x,y,z)
 		cv2.putText(traj, text, (20,40), cv2.FONT_HERSHEY_PLAIN, 1, (255,255,255), 1, 8)
-		#show_direction(traj, coords[:2], Rt)
+		show_direction(traj, (draw_x, draw_y), Rt)
 		cv2.imshow('Trajectory', traj)
 		cv2.waitKey(1)
 
