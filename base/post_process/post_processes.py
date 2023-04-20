@@ -60,6 +60,7 @@ def post_resnet(outputs, frame):
     hm.imgs_list = images_list
     index, scale, angle = hm()
     if type(scale) == type(': nan'):
+        x, y = 0, 0
         scale = 1
     draw_position(frame, index, angle)
     x = index//y_step_number
