@@ -1,6 +1,6 @@
 import cv2
 
-class ResNetDataset():
+class ResNetMap():
     
     def __init__(self, path_to_file, input_size=64, segment_number=25):
         self.cr_w, self.cr_h = input_size, input_size
@@ -54,5 +54,5 @@ input_size = 64
 segment_number = 25
 path = '/path/to/img/map_file.jpg'
 
-resnet_dataset = ResNetDataset(path, input_size, segment_number)
+resnet_map = ResNetMap(path, input_size, segment_number)
 

@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 from base.utils import format_dets
-from .datasets import resnet_dataset
+from .maps import resnet_map
 
 CONFIG_FILE = str(Path(__file__).parent.parent.parent.absolute()) + "/config.json"
 with open(CONFIG_FILE, 'r') as config_file:
@@ -282,7 +282,7 @@ def resnet_post_process(result):
     output = np.exp(output)/sum(np.exp(output))
     output_sorted = sorted(output, reverse=True)
     top = output_sorted[:10]
-    images_list = [resnet_dataset.get_crop_by_id(int(cls_id)) for cls_id in top]
+    images_list = [resnet_map.get_crop_by_id(int(cls_id)) for cls_id in top]
     return images_list
 
 def draw_position(image, scale, angle):
