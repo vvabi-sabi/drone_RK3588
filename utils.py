@@ -18,6 +18,7 @@ def fill_storages(
         raw_img_strg: strgs.ImageStorage=None,
         inf_img_strg: strgs.ImageStorage=None,
         dets_strg: strgs.DetectionsStorage=None, # YOLOv5
+        coords_strg: strgs.CoordinatesStorage=None, # ResNet
         start_time: float=None
 ):
     """Fill storages with raw frames, frames with bboxes, numpy arrays with
@@ -36,7 +37,7 @@ def fill_storages(
         Program start time
     -----------------------------------
     """
-    storages = [strg for strg in [dets_strg, inf_img_strg, raw_img_strg] if strg is not None]
+    storages = [strg for strg in [coords_strg, dets_strg, inf_img_strg, raw_img_strg] if strg is not None]
     while True:
             output = rk3588.get_data()
             if output is not None:

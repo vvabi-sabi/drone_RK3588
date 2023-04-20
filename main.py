@@ -32,7 +32,8 @@ def main():
     inferenced_frames_storage = strgs.ImageStorage(
         strgs.StoragePurpose.INFERENCED_FRAME
     )
-    detections_storage = None #strgs.DetectionsStorage()
+    detections_storage = None #strgs.DetectionsStorage(strgs.StoragePurpose.DETECTIONS)
+    coordinates_storage = strgs.CoordinatesStorage(strgs.StoragePurpose.DETECTIONS)
     fill_thread = Thread(
         target=fill_storages,
         kwargs={
@@ -40,6 +41,7 @@ def main():
             "raw_img_strg": raw_frames_storage,
             "inf_img_strg": inferenced_frames_storage,
             "dets_strg": detections_storage,
+            "coords_strg": coordinates_storage,
             "start_time": start_time
         },
         daemon=True

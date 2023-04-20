@@ -18,6 +18,7 @@ class StoragePurpose(IntEnum):
     RAW_FRAME = 1
     INFERENCED_FRAME = 2
     DETECTIONS = 3
+    COORDINATES = 4
 
 
 class Storage():
@@ -160,6 +161,17 @@ class DetectionsStorage(Storage):
     def __init__(self):
         super().__init__(
             storage_name = StoragePurpose.DETECTIONS,
+            data_size = (cfg["storages"]["dets_amount"], 6),
+            data_amount = cfg["storages"]["stored_data_amount"],
+            data_type = np.float32
+        )
+
+
+class CoordinatesStorage(Storage):
+    """Child class of Storage class specifically for coordinates numpy array"""
+    def __init__(self):
+        super().__init__(
+            storage_name = StoragePurpose.COORDINATES,
             data_size = (cfg["storages"]["dets_amount"], 6),
             data_amount = cfg["storages"]["stored_data_amount"],
             data_type = np.float32
