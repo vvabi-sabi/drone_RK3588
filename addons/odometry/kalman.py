@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Kallman:
+class Kalman:
     
     def __init__(self, f = np.eye(3), h = np.diag([1.,1., 1.]),
                        q = 2*np.diag([1,2,3]), r = 5*np.eye(3)):

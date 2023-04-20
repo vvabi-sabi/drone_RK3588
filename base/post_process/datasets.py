@@ -52,7 +52,7 @@ class ResNetDataset():
 
 input_size = 64
 segment_number = 25
-path = '/path/to/img/file.jpg'
+path = '/path/to/img/map_file.jpg'
 
 resnet_dataset = ResNetDataset(path, input_size, segment_number)
 

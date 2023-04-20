@@ -27,11 +27,11 @@ def main():
             print("Main exception: {}".format(e))
             exit()
     raw_frames_storage = strgs.ImageStorage(
-        strgs.StoragePurpose.RAW_FRAME
-    )
+                                    strgs.StoragePurpose.RAW_FRAME
+                            )
     inferenced_frames_storage = strgs.ImageStorage(
-        strgs.StoragePurpose.INFERENCED_FRAME
-    )
+                                    strgs.StoragePurpose.INFERENCED_FRAME
+                            )
     detections_storage = None #strgs.DetectionsStorage(strgs.StoragePurpose.DETECTIONS)
     coordinates_storage = strgs.CoordinatesStorage(strgs.StoragePurpose.COORDINATES)
     fill_thread = Thread(

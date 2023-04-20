@@ -10,7 +10,7 @@
         "verbose_file": "verbose.txt"
     },
     "camera": {
-        "show": true,
+        "show": false,
         "source": 0,
         "pixel_format": "MJPG",
         "width": 640,
@@ -18,7 +18,7 @@
         "fps": 60
     },
     "inference": {
-        "net_size": 224,
+        "net_size": 64,
         "buf_size": 3,
         "obj_thresh": 0.25,
         "nms_thresh": 0.45,
@@ -111,7 +111,7 @@
         ]
     },
     "storages": {
-        "state": true,
+        "state": false,
         "stored_data_amount": 300,
         "dets_amount": 100,
         "frames_delay": 10

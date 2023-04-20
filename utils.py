@@ -70,24 +70,17 @@ def show_frames_localy(
     calculated = False
     begin_time = time.time()
     fps = 0
+    cfg_fps = cfg["camera"]["fps"]
     stored_data_amount = cfg["storages"]["stored_data_amount"]
     while True:
         last_index = inf_img_strg.get_last_index()
         if cfg["debug"]["showed_frame_id"] and cur_index != last_index:
             with open(cfg["debug"]["showed_id_file"], 'a') as f:
-                f.write(
-                    "{}\t{:.3f}\n".format(
-                        cur_index,
-                        time.time() - start_time
-                    )
-                )
-        print(
-            "cur - {} last - {}".format(
-                cur_index,
-                last_index
-            ),
-            end='\r'
-        )
+                f.write("{}\t{:.3f}\n".format(cur_index,
+                                              time.time() - start_time
+                                            )
+                        )
+        print(f"cur - {cur_index} last - {last_index}")
         frame =\
             inf_img_strg.get_data_by_index(last_index % stored_data_amount)
         if cfg["camera"]["show"]:
@@ -106,9 +99,9 @@ def show_frames_localy(
         if last_index > cur_index:
             counter += 1
             cur_index = last_index
-        if counter % 60 == 0 and not calculated:
+        if counter % cfg_fps == 0 and not calculated:
             calculated = True
-            fps = 60/(time.time() - begin_time)
+            fps = cfg_fps/(time.time() - begin_time)
             begin_time = time.time()
-        if counter % 60 != 0:
+        if counter % cfg_fps != 0:
             calculated = False
