@@ -40,6 +40,6 @@ def pre_resnet(frame):
 def pre_autoencoder(frame):
 	NET_SIZE = cfg["inference"]["net_size"] # (320, 160)
 	cx, cy = int(frame.shape[0]/2), int(frame.shape[1]/2)
-    ltrb = cx - NET_SIZE[0]/2, cy - NET_SIZE[1]/2, cx + NET_SIZE[0]/2, cy + NET_SIZE[1]/2
-    frame = frame[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]]
-    return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	ltrb = cx - NET_SIZE[0]/2, cy - NET_SIZE[1]/2, cx + NET_SIZE[0]/2, cy + NET_SIZE[1]/2
+	frame = frame[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]]
+	return cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)

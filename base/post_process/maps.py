@@ -50,14 +50,16 @@ class ResNetMap():
     def __len__(self):
         return len(self.cls_crops)
 
+
 class AutoEncoderMap():
 	
-	def __init__(self, y_step_number=320 , vectors_path='test.npz'):
+	def __init__(self, y_step_number=316 , vectors_path='test.npy'):
 		self.y_step_number = y_step_number
 		self.found_index = None
 		self.square = 9*9 #the area around the position
-		self.vectors = np.load(vectors_path)
-		self.coords = np.array([[n//train_dataset.y_step_number, n%train_dataset.y_step_number] for n in range(len(self.vectors))])
+		with open(vectors_path, 'rb') as f:
+			self.vectors = np.load(f)
+		self.coords = np.array([[n//y_step_number, n%y_step_number] for n in range(len(self.vectors))])
 		self.reference_indexes = np.arange(0, len(self.vectors), 1, dtype=int) 
 	
 	def get_reference_indexes(self):
@@ -80,8 +82,9 @@ class AutoEncoderMap():
 
 input_size = 64
 segment_number = 25
-path = '/path/to/img/map_file.jpg'
+img_path = '/path/to/img/map_file.jpg'
+resnet_map = ResNetMap(img_path, input_size, segment_number)
 
-resnet_map = ResNetMap(path, input_size, segment_number)
-
-autoen_map = AutoEncoderMap()
+y_step_number = 316
+vec_path = '/path/to/vectors/map.npy'
+autoen_map = AutoEncoderMap(y_step_number, vec_path)
