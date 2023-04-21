@@ -87,5 +87,4 @@ def crop_image(image):
     cx, cy = int(image.shape[0]/2), int(image.shape[1]/2)
     ltrb = cx - NET_SIZE[1]/2, cy - NET_SIZE[0]/2, cx + NET_SIZE[1]/2, cy + NET_SIZE[0]/2
     ltrb = [max(0,i) for i in ltrb]
-    crop = image[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]]
-    return crop
+    return image[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]] # crop

@@ -116,18 +116,21 @@ class ModelsFactory():
 class Yolov5(ModelsFactory):
     pass
 
+
 class UNet(ModelsFactory):
     pass
 
+
 class ResNet(ModelsFactory):
     pass
+
 
 class AutoEncoder(ModelsFactory):
     
     def inference(self, q_in, q_out):
         while True:
             frame, raw_frame, frame_id = q_in.get()
-            imgs_list = self._pre_process(frame)
+            imgs_list = self._pre_process(frame) # len = 80
             for transform_img in imgs_list:
                 vector = self._rknnlite.inference(inputs=[transform_img])
                 outputs.append(vector)
