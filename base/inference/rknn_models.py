@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import numpy as np
 from rknnlite.api import RKNNLite
 
 from base.pre_process import pre_yolov5, pre_unet, pre_resnet, pre_autoencoder
@@ -122,5 +123,14 @@ class ResNet(ModelsFactory):
     pass
 
 class AutoEncoder(ModelsFactory):
-    pass
+    
+    def inference(self, q_in, q_out):
+        while True:
+            frame, raw_frame, frame_id = q_in.get()
+            imgs_list = self._pre_process(frame)
+            for transform_img in imgs_list:
+                vector = self._rknnlite.inference(inputs=[transform_img])
+                outputs.append(vector)
+            outputs = np.array(outputs)
+            q_out.put((outputs, raw_frame, frame_id))
 
