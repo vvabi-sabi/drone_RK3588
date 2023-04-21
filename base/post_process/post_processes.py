@@ -69,12 +69,11 @@ def post_resnet(outputs, frame):
 
 def post_autoencoder(outputs, frame):
 	z_dataset_photo = 200
-	output = outputs[0]
-	#index = autoen_map.current position()
-	indexes = autoen_map.get_reference_indexes() # [96200 x 1000] or [324 x 1000]
-	index
+	vector = outputs[0]
+	index = autoen_map.get_position(vector)
+	indexes = autoen_map.get_reference_indexes(index) # [96200 x 1000] or [324 x 1000]
 	reference_img, reference_coord = autoen_map.get_geo_data(indexes)
-	w = reference_img @ output # Yge * y
+	w = reference_img @ vector # Yge * y
 	Wth = get_wth(w)
 	xy = reference_coord.T @ Wth # Xge * Wth
 	# determine the angle of rotation and rotate the source photo

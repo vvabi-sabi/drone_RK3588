@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from numpy.linalg import norm
+
 
 class ResNetMap():
     
@@ -52,33 +54,42 @@ class ResNetMap():
 
 
 class AutoEncoderMap():
-	
-	def __init__(self, y_step_number=316 , vectors_path='test.npy'):
-		self.y_step_number = y_step_number
-		self.found_index = None
-		self.square = 9*9 #the area around the position
-		with open(vectors_path, 'rb') as f:
-			self.vectors = np.load(f)
-		self.coords = np.array([[n//y_step_number, n%y_step_number] for n in range(len(self.vectors))])
-		self.reference_indexes = np.arange(0, len(self.vectors), 1, dtype=int) 
-	
-	def get_reference_indexes(self):
-		indexes = []
-		if self.found_index is None:
-			return self.reference_indexes
-		for step in range(-4, 5):
-			x_ind = self.found_indx - step*self.y_step_number
-			y_ind = [i for i in range((x_ind - 4), (x_ind + 5))] #index%train_dataset.y_step_number
-			indexes.append(y_ind)
-		indexes = np.array(indexes)
-		self.reference_indexes = np.reshape(indexes, (self.square, 1))
-		return self.reference_indexes
-	
-	def get_geo_data(self, reference_indexes):
-		reference_img = self.vectors[reference_indexes] # Yge
-		reference_coord = self.coords[reference_indexes] # Xge
-		reference_img = np.reshape(reference_img, (self.square, 1000))
-		reference_coord = np.reshape(reference_coord, (self.square, 2))
+    
+    def __init__(self, y_step_number=316 , vectors_path='test.npy'):
+        self.y_step_number = y_step_number
+        self.current_position = None
+        self.square = 9*9 #the area around the position
+        with open(vectors_path, 'rb') as f:
+            self.vectors = np.load(f)
+        self.coords = np.array([[n//y_step_number, n%y_step_number] for n in range(len(self.vectors))])
+        self.reference_indexes = np.arange(0, len(self.vectors), 1, dtype=int) 
+
+    def get_position(self, vector):
+        cos_max = 0.1
+        found_indx = 0
+        db_vectors = self.vectors[self.reference_indexes]
+        for n, vec in enumerate(db_vectors):
+            res = np.dot(vec, vector)/(norm(vec)*norm(vector))
+            if res > cos_max:
+                cos_max = res
+                found_indx = n
+        return found_indx
+
+    def get_reference_indexes(self, found_indx):
+        indexes = []
+        for step in range(-4, 5):
+            x_ind = found_indx - step*self.y_step_number
+            y_ind = [i for i in range((x_ind - 4), (x_ind + 5))] #index%train_dataset.y_step_number
+            indexes.append(y_ind)
+        indexes = np.array(indexes)
+        self.reference_indexes = np.reshape(indexes, (self.square, 1))
+        return self.reference_indexes
+
+    def get_geo_data(self, reference_indexes):
+        reference_img = self.vectors[reference_indexes] # Yge
+        reference_coord = self.coords[reference_indexes] # Xge
+        reference_img = np.reshape(reference_img, (self.square, 1000))
+        reference_coord = np.reshape(reference_coord, (self.square, 2))
 
 input_size = 64
 segment_number = 25
