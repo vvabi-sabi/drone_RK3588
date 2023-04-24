@@ -55,7 +55,7 @@ if __name__ == '__main__':
     input_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
     input_img = np.expand_dims(input_img, 0)
-    input_img = np.expand_dims(input_img, axis=-1) # !!
+    input_img = np.expand_dims(input_img, axis=-1)
     print('input_img', input_img.shape)
     
     # Init runtime environment img = cv2.resize(frame, (config.NET_SIZE, config.NET_SIZE))

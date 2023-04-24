@@ -60,7 +60,7 @@ def post_resnet(outputs, frame):
         x, y = 0., 0.
         scale = 1.
         angle = 0.
-    draw_position(frame, index, angle)
+    draw_position(frame, scale, angle)
     x = index//y_step_number
     y = index%y_step_number
     z = scale*z_dataset_photo
@@ -79,7 +79,8 @@ def post_autoencoder(outputs, frame):
     vec = autoen_map.vectors[index] # True Map Crop
     angle = find_angle(rotation_list, vec)
     scale = find_scale(scale_list, vec)
-    
+
+    draw_position(frame, scale, angle)
     z = scale*z_dataset_photo
     coords = np.array([xy[0], xy[1], z, angle])
     return frame, coords
@@ -299,12 +300,12 @@ def resnet_post_process(result):
     return images_list
 
 def draw_position(image, scale, angle):
-    width = image.shape[1]
+    #width = image.shape[1]
     height = image.shape[0]
-    top = int((height/2))
+    top = int((height - 50))
     left = int(50)
     cv2.putText(img=image,
-                text=f'index-{scale}, angle-{angle}',
+                text=f'scale-{scale}, angle-{angle}',
                 org=(top, left),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=0.6,
