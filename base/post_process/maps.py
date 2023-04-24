@@ -94,7 +94,7 @@ class AutoEncoderMap():
 input_size = 64
 segment_number = 25
 img_path = '/path/to/img/map_file.jpg'
-resnet_map = ResNetMap(img_path, input_size, segment_number)
+resnet_map = 0 #ResNetMap(img_path, input_size, segment_number)
 
 y_step_number = 316
 vec_path = '/path/to/vectors/map.npy'
