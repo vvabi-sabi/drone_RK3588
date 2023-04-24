@@ -302,7 +302,7 @@ def resnet_post_process(result):
 def draw_position(image, scale, angle):
     #width = image.shape[1]
     height = image.shape[0]
-    top = int((height - 50))
+    top = int((height - 55))
     left = int(50)
     cv2.putText(img=image,
                 text=f'scale-{scale}, angle-{angle}',
