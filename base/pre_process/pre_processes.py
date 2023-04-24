@@ -45,7 +45,6 @@ def pre_autoencoder(frame):
     return np.array(transforms)
 
 
-
 def rotate_imgs_list(raw):
     img_list = []
     for angle in range(0, 360, 5):
