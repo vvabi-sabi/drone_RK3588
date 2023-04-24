@@ -78,7 +78,7 @@ class RK3588():
                      RKNNLite.NPU_CORE_1,
                      RKNNLite.NPU_CORE_2
                     ]
-        self.model = [ResNet(proc=i,
+        self.model = [AutoEncoder(proc=i,
                              core=self._cores[i%3]
                              )
                              for i in range(cfg["inference"]["inf_proc"])

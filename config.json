@@ -18,7 +18,7 @@
         "fps": 60
     },
     "inference": {
-        "net_size": 64,
+        "net_size": [320, 160],
         "buf_size": 3,
         "obj_thresh": 0.25,
         "nms_thresh": 0.45,
