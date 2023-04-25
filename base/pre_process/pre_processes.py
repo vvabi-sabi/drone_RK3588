@@ -84,12 +84,9 @@ def scale_image(image, scale=None):
 def crop_image(image):
     NET_SIZE = cfg["inference"]["net_size"] # (320, 160)
     cx, cy = int(image.shape[0]/2), int(image.shape[1]/2)
-<<<<<<< HEAD
     NET_SIZE_0 = int(NET_SIZE[0]/2)
     NET_SIZE_1 = int(NET_SIZE[1]/2)
     ltrb = cx - NET_SIZE_1, cy - NET_SIZE_0, cx + NET_SIZE_1, cy + NET_SIZE_0
-=======
-    ltrb = cx - NET_SIZE[1]/2, cy - NET_SIZE[0]/2, cx + NET_SIZE[1]/2, cy + NET_SIZE[0]/2
->>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
+
     ltrb = [max(0,i) for i in ltrb]
     return image[ltrb[0]:ltrb[2], ltrb[1]:ltrb[3]] # crop

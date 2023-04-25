@@ -10,12 +10,7 @@ from base.post_process import post_yolov5, post_unet, post_resnet, post_autoenco
 ROOT = Path(__file__).parent.parent.parent.absolute()
 MODELS = str(ROOT) + "/models/"
 CONFIG_FILE = str(ROOT) + "/config.json"
-<<<<<<< HEAD
 
-=======
-RESNET_INPUT_SIZE = 64
-UNET_INPUT_SIZE = 224
->>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
 
 with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
