@@ -1,4 +1,5 @@
 # RKNPU2
+<<<<<<< HEAD
 ## YOLOv5
 ![yolo_result](YOLOv5.png)
 
@@ -27,6 +28,9 @@ photo --> UNet --> mask
 photo --> AE --> vector
 vector --> db --> index, scale, angle (localization and orientation)
 ```
+=======
+...
+>>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
 
 # ONNX2RKNN convert
 Unet

@@ -2,7 +2,11 @@
 __pycache__
 .ipynb_checkpoints
 *.jpg
+<<<<<<< HEAD
 
+=======
+*.png
+>>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
 *.txt
 !training/requirements.txt
 !requirements_cp38-1.4.0.txt
@@ -13,4 +17,7 @@ __pycache__
 !models/yolov5m_leaky_352x352.rknn
 !models/yolov5s-640-640.rknn
 !models/yolov5m_leaky.rknn
+<<<<<<< HEAD
 !models/encoder.rknn
+=======
+>>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1

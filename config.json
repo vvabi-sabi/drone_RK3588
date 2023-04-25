@@ -11,7 +11,11 @@
     },
     "camera": {
         "show": false,
+<<<<<<< HEAD
         "source": 11,
+=======
+        "source": 0,
+>>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
         "pixel_format": "MJPG",
         "width": 640,
         "height": 480,
@@ -26,7 +30,11 @@
         "post_proc": 3,
         "async_mode": true,
         "default_model": "unet.rknn",
+<<<<<<< HEAD
         "new_model": "encoder.rknn",
+=======
+        "new_model": "resnet.rknn",
+>>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
         "classes": [
             "person",
             "bicycle",
