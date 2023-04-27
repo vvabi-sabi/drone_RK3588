@@ -89,7 +89,7 @@ class AutoEncoderMap():
     def get_geo_data(self, reference_indexes):
         reference_img = self.vectors[reference_indexes] # Yge
         reference_coord = self.coords[reference_indexes] # Xge
-        reference_img = np.reshape(reference_img, (self.square, 1000))
+        reference_img = np.reshape(reference_img, (self.square, 6000))
         reference_coord = np.reshape(reference_coord, (self.square, 2))
 
 input_size = 64
