@@ -22,7 +22,7 @@
         "buf_size": 3,
         "obj_thresh": 0.25,
         "nms_thresh": 0.45,
-        "inf_proc": 3,
+        "inf_proc": 1,
         "post_proc": 3,
         "async_mode": true,
         "default_model": "unet.rknn",

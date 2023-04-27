@@ -130,10 +130,11 @@ class AutoEncoder(ModelsFactory):
         while True:
             frame, raw_frame, frame_id = q_in.get()
             imgs_list = self._pre_process(frame) # len = 80
+            outputs = []
             for transform_img in imgs_list:
-                input_img = np.expand_dims(transform_img, 0)
-                vector = self._rknnlite.inference(inputs=input_img)
-                vector = vector.reshape(6000)
+                input_img = transform_img #np.expand_dims(transform_img, 0)
+                vector = self._rknnlite.inference(inputs=[input_img])
+                vector = vector[0].reshape(6000)
                 outputs.append(vector)
             outputs = np.array(outputs)
             q_out.put((outputs, raw_frame, frame_id))

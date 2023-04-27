@@ -94,7 +94,7 @@ class RK3588():
                                 )
                                 for i in range(len(self.model))
                         ]
-        self._post = [Process(target=self.model[i].post_process,
+        self._post = [Process(target=self.model[0].post_process, #model[i]
                               kwargs={"q_in" : self._q_outs,
                                       "q_out" : self._q_post
                                       },

@@ -68,7 +68,10 @@ class AutoEncoderMap():
     def get_position(self, vector):
         cos_max = 0.1
         found_indx = 0
-        db_vectors = self.vectors[self.reference_indexes]
+        if len(self.reference_indexes) > 324: # 18*18
+            db_vectors = self.vectors
+        else:
+            db_vectors = self.vectors[self.reference_indexes]
         for n, vec in enumerate(db_vectors):
             res = np.dot(vec, vector)/(norm(vec)*norm(vector))
             if res > cos_max:
@@ -91,6 +94,7 @@ class AutoEncoderMap():
         reference_coord = self.coords[reference_indexes] # Xge
         reference_img = np.reshape(reference_img, (self.square, 6000))
         reference_coord = np.reshape(reference_coord, (self.square, 2))
+        return reference_img, reference_coord
 
 input_size = 64
 segment_number = 25
