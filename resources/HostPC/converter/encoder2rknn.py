@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     # pre-process config
     print('--> config model')
-    rknn.config(mean_values=[127.5], std_values=[127.5], target_platform="rk3588")
+    rknn.config(mean_values=[[0, 0, 0]], std_values=[[255, 255, 255]], target_platform="rk3588")
     print('done')
 
     # Load ONNX model
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     # Build model
     print('--> Building model')
-    ret = rknn.build(do_quantization=False, dataset='./dataset/dataset.txt')
+    ret = rknn.build(do_quantization=True, dataset='./dataset/dataset.txt')
     if ret != 0:
         print('Build model failed!')
         exit(ret)
@@ -52,13 +52,12 @@ if __name__ == '__main__':
     # Set inputs
     img = cv2.imread('./dataset/14.png')
     print('img', img.shape)
-    input_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2GRAY)
-    input_img = np.expand_dims(input_img, 0)
+    input_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    input_img = cv2.merge((input_img,input_img,input_img))
     input_img = np.expand_dims(input_img, axis=-1)
     print('input_img', input_img.shape)
     
-    # Init runtime environment img = cv2.resize(frame, (config.NET_SIZE, config.NET_SIZE))
+    # Init runtime environment
     print('--> Init runtime environment')
     ret = rknn.init_runtime()
     if ret != 0:
@@ -68,7 +67,7 @@ if __name__ == '__main__':
 
     # Inference
     outputs = rknn.inference(inputs=input_img)
-    print('\nLen', len(outputs))
+    print('\nLen', len(outputs[0]))
     print(outputs)
     print('done')
 
