@@ -56,7 +56,7 @@ class ResNetMap():
 class AutoEncoderMap():
     
     def __init__(self, coords_path='coords.npy' , vectors_path='map.npy'):
-        self.y_step_number = y_step_number
+        self.y_step_number = 316
         self.current_position = None
         self.square = 9*9 #the area around the position
         with open(vectors_path, 'rb') as f:
@@ -80,7 +80,7 @@ class AutoEncoderMap():
         indexes = []
         for step in range(-4, 5):
             x_ind = found_indx - step*self.y_step_number
-            y_ind = [i for i in range((x_ind - 4), (x_ind + 5))] #index%train_dataset.y_step_number
+            y_ind = [i for i in range((x_ind - 4), (x_ind + 5))]
             indexes.append(y_ind)
         indexes = np.array(indexes)
         self.reference_indexes = np.reshape(indexes, (self.square, 1))
@@ -97,7 +97,6 @@ segment_number = 25
 img_path = '/path/to/img/map_file.jpg'
 resnet_map = 0 #ResNetMap(img_path, input_size, segment_number)
 
-y_step_number = 316
 vec_path = '/path/to/vectors/map.npy'
 coord_path = '/path/to/coords/xy.npy'
 autoen_map = AutoEncoderMap(coord_path, vec_path)

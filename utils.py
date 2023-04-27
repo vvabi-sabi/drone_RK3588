@@ -18,7 +18,7 @@ def fill_storages(
         raw_img_strg: strgs.ImageStorage=None,
         inf_img_strg: strgs.ImageStorage=None,
         dets_strg: strgs.DetectionsStorage=None, # YOLOv5
-        coords_strg: strgs.CoordinatesStorage=None, # ResNet
+        coords_strg: strgs.CoordinatesStorage=None, # ResNet, Encoder
         start_time: float=None
 ):
     """Fill storages with raw frames, frames with bboxes, numpy arrays with
@@ -41,7 +41,6 @@ def fill_storages(
     while True:
             output = rk3588.get_data()
             if output is not None:
-                #print('output', output)
                 frame_id = output.pop()
                 for strg in storages:
                     strg.set_data(

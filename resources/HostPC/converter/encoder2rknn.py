@@ -1,8 +1,4 @@
 import os
-import urllib
-import traceback
-import time
-import sys
 import numpy as np
 import cv2
 from rknn.api import RKNN

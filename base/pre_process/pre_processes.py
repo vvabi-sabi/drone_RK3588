@@ -38,7 +38,7 @@ def pre_resnet(frame):
     return cv2.resize(frame, (NET_SIZE, NET_SIZE))
 
 def pre_autoencoder(frame):
-    raw_source = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    raw_source = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY) # Camera() -> RGB
     raw_source = cv2.merge((raw_source,raw_source,raw_source))
     angles = rotate_imgs_list(raw_source) # Model.inference
     scales = scale_imgs_list(raw_source)

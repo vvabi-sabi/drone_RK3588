@@ -19,11 +19,7 @@ if __name__ == "__main__":
     rknn.config(
         mean_values=mean_values,
         std_values=std_values,
-<<<<<<< HEAD
         target_platform=target_platform) #quant_img_RGB2BGR=True,  quantized_method='layer', quantized_algorithm='mmse') 
-=======
-        target_platform=target_platform)
->>>>>>> a41b235c55dcc21b32472f18c6f35413e007bbc1
     print('done')
 
     # Load ONNX model
