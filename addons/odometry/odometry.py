@@ -14,7 +14,7 @@ def get_R(alpha):
 def show_direction(image, t, M):
     line_thickness = 1
     cx, cy = t
-    triangle = np.array([[-7, 7], [7, 7], [0, -9]]).T
+    triangle = np.array([[-9, 9], [9, 9], [0, -11]]).T
 
     triangle_rot = M@triangle
     triangle = triangle_rot.T
@@ -47,7 +47,7 @@ f = np.eye(4)
 def mapping(q_in):
 	kalman = Kalman(f = f, h = h, q = q, r = r)
 	kalman.set_state()
-	traj = np.zeros((600,600,3), dtype=np.uint8)
+	traj = np.zeros((400,400,3), dtype=np.uint8)
 	while True:
 		#raw_frame, frame, coords, frame_id
 		_, _, coords, frame_id = q_in.get()
@@ -62,7 +62,7 @@ def mapping(q_in):
 		# 					coords[1],
 		# 					[float(kalman.state[1])]])
 		# x, y, z = coords[0], coords[1], coords[2]
-		draw_x, draw_y = int(x+290), int(y+290)
+		draw_x, draw_y = int(x+200), int(y+200)
 
 		z_color = int(z*255/300)
 		#cv2.circle(traj, (draw_x,draw_y), 1, (z_color,255-z_color,255), 2)

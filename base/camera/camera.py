@@ -1,3 +1,4 @@
+import os
 import json
 import time
 from datetime import datetime
@@ -62,22 +63,23 @@ class Cam():
         self._stop_record = Value('i', 0)
         self._cap = cv2.VideoCapture(source)
         self._last_frame_id = 0
-        self._cap.set(
-            cv2.CAP_PROP_FOURCC,
-            cv2.VideoWriter.fourcc(*cfg["camera"]["pixel_format"])
-        )
-        self._cap.set(
-            cv2.CAP_PROP_FRAME_WIDTH,
-            cfg["camera"]["width"]
-        )
-        self._cap.set(
-            cv2.CAP_PROP_FRAME_HEIGHT,
-            cfg["camera"]["height"]
-        )
-        self._cap.set(
-            cv2.CAP_PROP_FPS,
-            cfg["camera"]["fps"]
-        )
+        if os.path.isfile(source) is False:
+            self._cap.set(
+                cv2.CAP_PROP_FOURCC,
+                cv2.VideoWriter.fourcc(*cfg["camera"]["pixel_format"])
+            )
+            self._cap.set(
+                cv2.CAP_PROP_FRAME_WIDTH,
+                cfg["camera"]["width"]
+            )
+            self._cap.set(
+                cv2.CAP_PROP_FRAME_HEIGHT,
+                cfg["camera"]["height"]
+            )
+            self._cap.set(
+                cv2.CAP_PROP_FPS,
+                cfg["camera"]["fps"]
+            )
         self._frame_id = 0
         self._fps = 0
         self._max_fps = 0
@@ -85,7 +87,7 @@ class Cam():
         self._begin = 0
 
     def _bgr2rgb(self, frame: Mat):
-        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # frame = cv2.resize(
         #     frame,
         #     (cfg["inference"]["net_size"], cfg["inference"]["net_size"])
@@ -119,7 +121,7 @@ class Cam():
             raise SystemExit
 
     def show(self, start_time):
-        raw_frame, frame, dets, frame_id = self._q_in.get()
+        raw_frame, frame, _, frame_id = self._q_in.get()
         self._count+=1
         if frame_id < self._last_frame_id:
             return

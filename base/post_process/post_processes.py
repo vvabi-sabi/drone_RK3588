@@ -306,7 +306,7 @@ def draw_position(image, scale, angle):
     left = int(50)
     cv2.putText(img=image,
                 text=f'scale-{scale}, angle-{angle}',
-                org=(top, left),
+                org=(left, top),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=0.6,
                 color=(0, 0, 255),
