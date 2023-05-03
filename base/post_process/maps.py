@@ -52,10 +52,23 @@ class ResNetMap():
     def __len__(self):
         return len(self.cls_crops)
 
+#______________________________
+class Direction():
+
+    def __init__(self,angle=0.,scale=1.):
+        self.cur_angle = angle
+        self.cur_scale = scale
+    
+    def update(self,angle,scale):
+        self.cur_angle += angle
+        self.cur_scale *= scale
+    
+#current_pos = Direction(145, 6, 0, 0.9)
 
 class AutoEncoderMap():
     
     def __init__(self, coords_path='coords.npy' , vectors_path='map.npy'):
+        self.direction = Direction(0, 0.8)
         self.y_step_number = 316
         self.current_position = None
         self.square = 9*9 #the area around the position
@@ -69,7 +82,7 @@ class AutoEncoderMap():
         cos_max = 0.1
         found_indx = 0
         if len(self.reference_indexes) > 324: # 18*18
-            db_vectors = self.vectors
+            db_vectors = self.vectors[45820:45836]
         else:
             db_vectors = self.vectors[self.reference_indexes]
         for n, vec in enumerate(db_vectors):

@@ -37,18 +37,20 @@ def pre_resnet(frame):
     NET_SIZE = cfg["inference"]["net_size"]
     return cv2.resize(frame, (NET_SIZE, NET_SIZE))
 
-def pre_autoencoder(frame):
+
+
+def pre_autoencoder(frame, cur_angl=0, cur_scl=1.):
     raw_source = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY) # Camera() -> RGB
     raw_source = cv2.merge((raw_source,raw_source,raw_source))
-    angles = rotate_imgs_list(raw_source) # Model.inference
-    scales = scale_imgs_list(raw_source)
+    angles = rotate_imgs_list(raw_source, cur_angl) # Model.inference
+    scales = scale_imgs_list(raw_source, cur_scl)
     transforms = angles + scales
     return np.array(transforms)
 
 
 def rotate_imgs_list(raw):
     img_list = []
-    for angle in range(0, 360, 5):
+    for angle in [0,-5,-4,-3,-2,-1,1,2,3,4,5]:
         rot_img = rotate_image(raw, angle)
         rot_crop = crop_image(rot_img)
         img_list.append(rot_crop)
@@ -65,7 +67,7 @@ def rotate_image(image, angle=None):
 
 def scale_imgs_list(raw):
     img_list = []
-    scales = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5]
+    scales = [0.85, 0.9, 0.95, 1., 1.05, 1.1, 1.15]
     for scale in scales:
         scl_img = scale_image(raw, scale)
         scl_crop = crop_image(scl_img)

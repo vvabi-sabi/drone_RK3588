@@ -69,20 +69,23 @@ def post_resnet(outputs, frame):
 
 def post_autoencoder(outputs, frame):
     z_dataset_photo = 200
-    vector = outputs[0]
+    vector = outputs[0] # relative angle = 0
     index = autoen_map.get_position(vector)
-    indexes = autoen_map.get_reference_indexes(index) # [96200 x 1000] or [324 x 1000]
-    xy = xy_compute(vector, indexes)       
+    indexes = autoen_map.get_reference_indexes(index) # [96200 x 2000] or [324 x 2000]
+    xy = xy_compute(vector, indexes)
+    direction = autoen_map.direction
     # determine the angle of rotation and rotate the source photo
-    rotation_list = outputs[:72]
-    scale_list = outputs[72:]
+    rotation_list = outputs[:11] # angles
+    scale_list = outputs[11:] # scales
     vec = autoen_map.vectors[index] # True Map Crop
-    angle = find_angle(rotation_list, vec)
-    scale = find_scale(scale_list, vec)
 
-    draw_position(frame, scale, angle)
-    z = scale*z_dataset_photo
-    coords = np.array([xy[0], xy[1], z, angle])
+    angle = find_angle(rotation_list, vec)# relative angle
+    scale = find_scale(scale_list, vec) # relative scale
+    direction.update(angle,scale)
+
+    draw_position(frame, direction.cur_scale, direction.cur_angle)
+    z = direction.cur_scale*z_dataset_photo
+    coords = np.array([xy[0], xy[1], z, direction.cur_angle])
     return frame, coords
 
 #__YOLOv5__
@@ -421,17 +424,18 @@ def xy_compute(vector, indexes):
     return xy
 
 def find_angle(vectors, vec):
-    angles = [angle for angle in range(0, 360, 5)]
+    angles = [0,-5,-4,-3,-2,-1,1,2,3,4,5] #[angle for angle in range(0, 360, 5)]
     angles = np.array(angles)
-    w = vectors @ vec # Scale_ge * vec
+    w = vectors @ vec # Angle_ge * vec
     Wth = get_wth(w)
     found_angle = angles.T @ Wth
     return found_angle
 
 def find_scale(vectors, vec):
-    scales = [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5]#, 1.7]
+    scales = [0.85, 0.9, 0.95, 1., 1.05, 1.1, 1.15]#, 1.7]
     scales = np.array(scales)
     w = vectors @ vec # Scale_ge * vec
     Wth = get_wth(w)
     found_scale = scales.T @ Wth
     return found_scale
+
