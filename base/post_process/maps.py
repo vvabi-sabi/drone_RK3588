@@ -82,7 +82,7 @@ class AutoEncoderMap():
         cos_max = 0.1
         found_indx = 0
         if len(self.reference_indexes) > 324: # 18*18
-            db_vectors = self.vectors[45820:45836]
+            db_vectors = self.vectors[45820:45836] # we know start position
         else:
             db_vectors = self.vectors[self.reference_indexes]
         for n, vec in enumerate(db_vectors):
