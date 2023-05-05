@@ -1,4 +1,4 @@
-# UAV navigation based on Firefly_ROC-RK3588S
+# UAV navigation based on Firefly ROC-RK3588S
 ## YOLOv5
 ![yolo_result](images/YOLOv5.png)
 
@@ -28,7 +28,7 @@ photo --> AE --> vector
 vector --> db --> index, scale, angle (localization and orientation)
 ```
 
-# rknn_toolkit_lite2
+# rknn toolkit lite2
 
 ## Install
 Install miniconda
