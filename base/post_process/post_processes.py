@@ -72,7 +72,7 @@ def post_autoencoder(outputs, frame):
     vector = outputs[0] # relative angle = 0
     index = autoen_map.get_position(vector)
     last_vec = autoen_map.last_vector
-    if not last_vec:
+    if last_vec is None:
         last_vec = autoen_map.vectors[index] # True Map Crop
         #last_vec = outputs[0]
     ref_indexes = autoen_map.get_reference_indexes(index) # [96200 x 2000] or [324 x 2000]
