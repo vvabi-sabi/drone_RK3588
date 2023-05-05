@@ -18,6 +18,7 @@ Install RKNN-Toolkit2-Lite
 ```
 cd drone_RK3588/install/
 pip install rknn_toolkit_lite2-1.4.0-cp39-cp39-linux_aarch64.whl
+pip install -r requirements.txt
 ```
 ## YOLOv5
 ![yolo_result](images/YOLOv5.png)
