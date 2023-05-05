@@ -1,6 +1,4 @@
-# RKNPU2
-
-## Install dependencies
+## Install PC dependencies
 Conda:
 
 Create conda python3.8 - env
