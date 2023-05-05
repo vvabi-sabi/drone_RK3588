@@ -91,11 +91,11 @@ class AutoEncoderMap():
         return self.reference_indexes
 
     def get_geo_data(self, reference_indexes):
-        reference_img = self.vectors[reference_indexes] # Yge
-        reference_coord = self.coords[reference_indexes] # Xge
-        reference_img = np.reshape(reference_img, (self.square, 6000))
-        reference_coord = np.reshape(reference_coord, (self.square, 2))
-        return reference_img, reference_coord
+        reference_imgs = self.vectors[reference_indexes] # Yge
+        reference_coords = self.coords[reference_indexes] # Xge
+        reference_imgs = np.reshape(reference_imgs, (self.square, 2000))
+        reference_coords = np.reshape(reference_coords, (self.square, 2))
+        return reference_imgs, reference_coords
 
 input_size = 64
 segment_number = 25
