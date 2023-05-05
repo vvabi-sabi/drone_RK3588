@@ -55,14 +55,14 @@ class ResNetMap():
 #______________________________
 class AutoEncoderMap():
     
-    def __init__(self, coords_path='coords.npy' , vectors_path='map.npy'):
+    def __init__(self, coords_path='coords.npy' , encoded_path='map.npy'):
         self.cur_angle = 0
         self.cur_scale = 0.8
         self.last_vector = None
         self.y_step_number = 316
         self.current_position = None
         self.square = 9*9 #the area around the position
-        with open(vectors_path, 'rb') as f:
+        with open(encoded_path, 'rb') as f:
             self.vectors = np.load(f)
         with open(coords_path, 'rb') as f:
             self.coords = np.load(f)
@@ -104,6 +104,6 @@ segment_number = 25
 img_path = '/path/to/img/map_file.jpg'
 resnet_map = 0 #ResNetMap(img_path, input_size, segment_number)
 
-vec_path = '/path/to/vectors/map.npy'
-coord_path = '/path/to/coords/xy.npy'
-autoen_map = AutoEncoderMap(coord_path, vec_path)
+encoded_map = '/path/to/vectors/map.npy'
+coords = '/path/to/coords/xy.npy'
+autoen_map = AutoEncoderMap(coords, encoded_map)
