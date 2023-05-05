@@ -88,7 +88,7 @@ class AutoEncoderMap():
         indexes = []
         for step in range(-4, 5):
             x_ind = found_indx - step*self.y_step_number
-            y_ind = [i for i in range((x_ind - 4), (x_ind + 5))]
+            y_ind = [i for i in range((x_ind - 4), (x_ind + 5)) if i>0]
             if y_ind == []:
                 continue
             indexes.append(y_ind)
