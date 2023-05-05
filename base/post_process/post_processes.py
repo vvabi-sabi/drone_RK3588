@@ -73,19 +73,18 @@ def post_autoencoder(outputs, frame):
     index = autoen_map.get_position(vector)
     indexes = autoen_map.get_reference_indexes(index) # [96200 x 2000] or [324 x 2000]
     xy = xy_compute(vector, indexes)
-    direction = autoen_map.direction
     # determine the angle of rotation and rotate the source photo
     rotation_list = outputs[:11] # angles
     scale_list = outputs[11:] # scales
     vec = autoen_map.vectors[index] # True Map Crop
 
     angle = find_angle(rotation_list, vec)# relative angle
+    autoen_map.cur_angle += angle
     scale = find_scale(scale_list, vec) # relative scale
-    direction.update(angle,scale)
 
-    draw_position(frame, direction.cur_scale, direction.cur_angle)
-    z = direction.cur_scale*z_dataset_photo
-    coords = np.array([xy[0], xy[1], z, direction.cur_angle])
+    draw_position(frame, scale, autoen_map.cur_angle)
+    z = scale*z_dataset_photo
+    coords = np.array([xy[0], xy[1], z, autoen_map.cur_angle])
     return frame, coords
 
 #__YOLOv5__
