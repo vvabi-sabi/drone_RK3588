@@ -91,8 +91,13 @@ class ModelsFactory():
         if Class.__name__ == 'Yolov5':
             return pre_yolov5, post_yolov5
         elif Class.__name__ == 'UNet':
+            # TODO
+            # PIDNet test
+            #  https://github.com/XuJiacong/PIDNet?ysclid=lhabrzdqhi954052981
             return pre_unet, post_unet
         elif Class.__name__ == 'ResNet':
+            # TODO
+            # add Markov chain
             return pre_resnet, post_resnet
         elif Class.__name__ == 'AutoEncoder':
             return pre_autoencoder, post_autoencoder
@@ -134,7 +139,7 @@ class AutoEncoder(ModelsFactory):
             imgs_list = self._pre_process(frame) # len = 18
             outputs = []
             for transform_img in imgs_list:
-                input_img = transform_img #np.expand_dims(transform_img, 0)
+                input_img = transform_img
                 vector = self._rknnlite.inference(inputs=[input_img])
                 vector = vector[0].reshape(2000)
                 outputs.append(vector)

@@ -75,6 +75,8 @@ class AutoEncoderMap():
             db_vectors = self.vectors[45820:45836] # we know start position
         else:
             db_vectors = self.vectors[self.reference_indexes]
+        # TODO
+        # C-Python insert
         for n, vec in enumerate(db_vectors):
             res = np.dot(vec, vector)/(norm(vec)*norm(vector))
             if res > cos_max:
