@@ -134,6 +134,8 @@ class AutoEncoder(ModelsFactory):
     def inference(self, q_in, q_out):
         # TODO
         # add multi_input, C-Python insert
+        # VAE model
+        # RGB input
         while True:
             frame, raw_frame, frame_id = q_in.get()
             imgs_list = self._pre_process(frame) # len = 18
