@@ -74,7 +74,6 @@ def post_autoencoder(outputs, frame):
     last_vec = autoen_map.last_vector
     if last_vec is None:
         last_vec = autoen_map.vectors[index] # True Map Crop
-        #last_vec = outputs[0]
     ref_indexes = autoen_map.get_reference_indexes(index) # [96200 x 2000] or [324 x 2000]
     xy = xy_compute(vector, ref_indexes)
     # determine the angle of rotation and rotate the source photo
