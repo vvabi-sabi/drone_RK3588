@@ -1,4 +1,24 @@
 # RKNPU2
+
+## Install
+Install miniconda
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+bash Miniconda3-latest-Linux-aarch64.sh
+```
+Create conda python3.9 - env
+```
+conda create -n <env-name> python=3.9
+```
+Activate virtualenv
+```
+conda activate <env-name>
+```
+Install RKNN-Toolkit2-Lite
+```
+cd drone_RK3588/install/
+pip install rknn_toolkit_lite2-1.4.0-cp39-cp39-linux_aarch64.whl
+```
 ## YOLOv5
 ![yolo_result](images/YOLOv5.png)
 
@@ -28,7 +48,7 @@ photo --> AE --> vector
 vector --> db --> index, scale, angle (localization and orientation)
 ```
 
-# ONNX2RKNN convert
+# onnx2rknn convert
 Unet
 ```
 python3 unet_onnx2rknn.py \
