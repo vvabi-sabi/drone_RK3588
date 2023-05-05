@@ -57,6 +57,8 @@ class AutoEncoderMap():
     
     def __init__(self, coords_path='coords.npy' , vectors_path='map.npy'):
         self.cur_angle = 0
+        self.cur_scale = 0.8
+        self.last_vector = None
         self.y_step_number = 316
         self.current_position = None
         self.square = 9*9 #the area around the position
