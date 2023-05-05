@@ -17,8 +17,8 @@ conda activate <env-name>
 Install RKNN-Toolkit2-Lite
 ```
 cd drone_RK3588/install/
-pip install rknn_toolkit_lite2-1.4.0-cp39-cp39-linux_aarch64.whl
 pip install -r requirements.txt
+pip install rknn_toolkit_lite2-1.4.0-cp39-cp39-linux_aarch64.whl
 ```
 ## YOLOv5
 ![yolo_result](images/YOLOv5.png)
@@ -64,3 +64,4 @@ python3 resnet2rknn.py \
         --output path-where-save-rknn-model \
         --dataset path-to-txt-file-with-calibration-images-names
 ```
+...
