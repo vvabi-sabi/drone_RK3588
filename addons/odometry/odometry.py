@@ -62,7 +62,7 @@ def mapping(q_in):
 		# 					coords[1],
 		# 					[float(kalman.state[1])]])
 		# x, y, z = coords[0], coords[1], coords[2]
-		draw_x, draw_y = int(x+200), int(y+200)
+		draw_x, draw_y = int(x), int(y)
 
 		z_color = int(z*255/300)
 		#cv2.circle(traj, (draw_x,draw_y), 1, (z_color,255-z_color,255), 2)
