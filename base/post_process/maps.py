@@ -89,9 +89,13 @@ class AutoEncoderMap():
         for step in range(-4, 5):
             x_ind = found_indx - step*self.y_step_number
             y_ind = [i for i in range((x_ind - 4), (x_ind + 5))]
+            if y_ind == []:
+                continue
             indexes.append(y_ind)
         indexes = np.array(indexes)
-        self.reference_indexes = np.reshape(indexes, (self.square, 1))
+        square = 9*len(indexes)
+        indexes = np.reshape(indexes, (square, 1))
+        self.reference_indexes = indexes
         return self.reference_indexes
 
     def get_geo_data(self, reference_indexes):
