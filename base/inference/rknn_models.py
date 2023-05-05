@@ -133,7 +133,7 @@ class AutoEncoder(ModelsFactory):
     
     def inference(self, q_in, q_out):
         # TODO
-        # add multi_input, C-Python insert
+        # add multi_input/output, C-Python insert
         # VAE model
         # RGB input
         while True:
