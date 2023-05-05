@@ -94,8 +94,7 @@ class AutoEncoderMap():
             indexes.append(y_ind)
         indexes = np.array(indexes)
         square = 9*len(indexes)
-        indexes = np.reshape(indexes, (square, 1))
-        self.reference_indexes = indexes
+        self.reference_indexes = np.reshape(indexes, (square, 1))
         return self.reference_indexes
 
     def get_geo_data(self, reference_indexes):
