@@ -27,26 +27,3 @@ photo --> UNet --> mask
 photo --> AE --> vector
 vector --> db --> index, scale, angle (localization and orientation)
 ```
-
-# rknn toolkit lite2
-
-## Install
-Install miniconda
-```
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
-bash Miniconda3-latest-Linux-aarch64.sh
-```
-Create conda python3.9 - env
-```
-conda create -n <env-name> python=3.9
-```
-Activate virtualenv
-```
-conda activate <env-name>
-```
-Install RKNN-Toolkit2-Lite
-```
-cd drone_RK3588/install/
-pip install -r requirements.txt
-pip install rknn_toolkit_lite2-1.4.0-cp39-cp39-linux_aarch64.whl
-```
