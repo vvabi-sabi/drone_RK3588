@@ -2,8 +2,9 @@
 Use of various types of neural networks for aircraft navigation.
 Different post processes are used for each model. Same as odometry algorithms.
 Supports running models in parallel
+
+## YOLOv5:
 ```
-YOLOv5:
 1) inference
   photo --> YOLOv5 --> bbox
 2) Post Process
@@ -12,8 +13,8 @@ YOLOv5:
   Using the bbox centers of objects, a graph is built.
 ```
 
+## ResNet:
 ```
-ResNet:
 1) inference
   photo --> ResNet50 --> candidates (top 5)
 2) Post Process
@@ -22,8 +23,8 @@ ResNet:
   Using the Markov chains and nearest neighbors calculates position and direction.
 ```
 
+## UNet:
 ```
-ResNet:
 1) inference
   photo --> UNet --> mask
 2) Post Process
@@ -32,8 +33,8 @@ ResNet:
   ...
 ```
 
+## Encoder:
 ```
-Encoder:
 1) inference
   photo --> AE --> vector
 2) Post Process
