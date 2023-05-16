@@ -3,7 +3,10 @@ import cv2
 
 from .kalman import Kalman
 
-#https://github.com/uoip/monoVO-python
+
+class Odometry():
+	pass
+
 
 def get_R(alpha):
     M = np.array([[np.cos(np.pi*alpha/180), np.sin(np.pi*alpha/180)],

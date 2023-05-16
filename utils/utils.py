@@ -1,13 +1,8 @@
-import json
-from pathlib import Path
-
 import numpy as np
 
 
-CONFIG_FILE = str(Path(__file__).parent.parent.absolute()) + "/config.json"
-with open(CONFIG_FILE, 'r') as config_file:
-    cfg = json.load(config_file)
-
+class Visualizer():
+    pass
 
 def format_dets(boxes: np.ndarray, classes: np.ndarray, scores: np.ndarray):
     """Formating detections to numpy array

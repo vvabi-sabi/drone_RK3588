@@ -12,6 +12,10 @@ with open(CONFIG_FILE, 'r') as config_file:
     cfg = json.load(config_file)
 
 
+class PostProcesses():
+    pass
+
+
 def post_yolov5(outputs, frame):
     """Overlays bboxes on frames
     Args
