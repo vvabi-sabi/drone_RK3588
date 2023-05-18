@@ -42,13 +42,12 @@ def main(source):
     q_pre = Queue(maxsize=queue_size)
     #q_outs = Queue(maxsize=cfg["inference"]["buf_size"])
     q_post = Queue(maxsize=queue_size)
-    
     camera = Cam(source=source,
                  queue=q_pre)
-    device = RK3588(camera, models, queue=q_post)
-    models = ['YOLO'] # ['ResNet', 'UNet', 'Encoder']
-    post_processes = PostProcesses(models, post_process)
-    odometry_algs = Odometry(models, show_trajectory)
+    models_list = ['YOLO'] # ['ResNet', 'UNet', 'Encoder']
+    device = RK3588(camera, models_list, queue=q_post)
+    post_processes = PostProcesses(models_list, post_process)
+    odometry_algs = Odometry(models_list, show_trajectory)
     visualizer = Visualizer()
     try:
         run(device, visualizer, post_processes, odometry_algs)
