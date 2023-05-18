@@ -8,16 +8,20 @@ def run(device, visualizer, post_process, odometry):
     device.camera_set()
     device.start()
     if post_process is not None and odometry is None:
+        post_process.start()
         while True:
             frame, outputs = device.get_neuro_outputs()
             frame = post_process(frame, outputs)
             visualizer.show_frame(frame)
     elif odometry is not None and post_process is None:
+        odometry.start()
         while True:
             _, outputs = device.get_neuro_outputs()
             coords = odometry(outputs)
             visualizer.show_trajectory(coords)
     if post_process is not None  and odometry is not None:
+        post_process.start()
+        odometry.start()
         while True:
             frame, outputs = device.get_neuro_outputs()
             post_process(frame, outputs)
