@@ -11,7 +11,7 @@ class ModelNames():
                   'UNet':'unet.rknn',
                   'Encoder':'encoder.rknn'
                   }
-    
+    #@classmethod
     def get_path(self, models_list):
         path_list = []
         for model in models_list:
