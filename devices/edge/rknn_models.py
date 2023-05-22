@@ -5,6 +5,7 @@ from rknnlite.api import RKNNLite
 ROOT = Path(__file__).parent.parent.parent.absolute()
 MODELS_PATH = str(ROOT) + "/models/"
 
+
 class RKNNModelNames():
     NAMES_DICT = {'YOLO':'yolov5.rknn',
                   'ResNet':'resnet.rknn',
@@ -18,6 +19,7 @@ class RKNNModelNames():
         for model in model_list:
             path_list.append(self.NAMES_DICT.get(model))
         return path_list
+
 
 class RKNNModelLoader():
     """
@@ -80,6 +82,7 @@ class RKNNModelLoader():
             return ret
         print(f'{model} is loaded')
         return rknnlite
+
 
 class ModelBuilder():
     
