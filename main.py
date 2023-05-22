@@ -5,23 +5,24 @@ from devices import Cam, RK3588
 
 
 def run(device, visualizer, post_process, odometry):
-    device.camera_set()
-    device.start()
+    device._camera.run()
+    device._neuro.run_inference()
+    #device.start()
     if post_process is not None and odometry is None:
-        post_process.start()
+        post_process.run()
         while True:
             frame, outputs = device.get_neuro_outputs()
             frame = post_process(frame, outputs)
             visualizer.show_frame(frame)
     elif odometry is not None and post_process is None:
-        odometry.start()
+        odometry.run()
         while True:
             _, outputs = device.get_neuro_outputs()
             coords = odometry(outputs)
             visualizer.show_trajectory(coords)
     if post_process is not None  and odometry is not None:
-        post_process.start()
-        odometry.start()
+        post_process.run()
+        odometry.run()
         while True:
             frame, outputs = device.get_neuro_outputs()
             post_process(frame, outputs)
@@ -42,9 +43,11 @@ def main(source):
     q_pre = Queue(maxsize=queue_size)
     #q_outs = Queue(maxsize=cfg["inference"]["buf_size"])
     q_post = Queue(maxsize=queue_size)
-    camera = Cam(source=source,
-                 queue=q_pre)
     models_list = ['YOLO'] # ['ResNet', 'UNet', 'Encoder']
+    camera = Cam(source=source,
+                 queue=q_pre,
+                 models=models_list)
+    camera.set()
     device = RK3588(camera, models_list, queue=q_post)
     post_processes = PostProcesses(models_list, post_process)
     odometry_algs = Odometry(models_list, show_trajectory)
