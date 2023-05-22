@@ -22,14 +22,16 @@ class ModelsLoader():
     """
     """
     
-    def __init__(self, models_list, proc:int, cores:list):
+    def __init__(self, models_list, cores:list):
         self.verbose = False
         self.verbose_file = 'verbose.txt'
         self.model_names_list = ModelNames().get_path(models_list)
+        if len(models_list) > 1:
+            self.async_mode = True
+        else:
+            self.async_mode = False
         self.nets = []
         self._cores = cores
-        self._proc = proc
-        
 
     def load_models(self):
         for n, model_name in enumerate(self.model_names_list):
@@ -40,25 +42,26 @@ class ModelsLoader():
             except Exception as e:
                 print("Cannot load model. Exception {}".format(e))
                 raise SystemExit
+            return self.nets
     
     def load(self, model: str, core: int):
         rknnlite = RKNNLite(verbose=self.verbose,
                             verbose_file=self.verbose_file
                             )
-        print("Export rknn model")
+        print(f"Export rknn model - {model}")
         ret = rknnlite.load_rknn(model)
         if ret != 0:
             print(f'Export {model} model failed!')
             return ret
         print('Init runtime environment')
         ret = rknnlite.init_runtime(
-                    async_mode=cfg["inference"]["async_mode"],
+                    async_mode=self.async_mode,
                     core_mask = core
                 )
         if ret != 0:
             print('Init runtime environment failed!')
             return ret
-        print(f'{model} model loaded' )
+        print(f'{model} is loaded')
         return rknnlite
 
 
