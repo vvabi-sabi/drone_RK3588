@@ -1,14 +1,14 @@
 from multiprocessing import Process, Queue
 from rknnlite.api import RKNNLite
 
-from rknn_models import ModelsLoader
+from rknn_models import ModelLoader
 
 
 class NeuroModule():
     
     def __init__(self, cores_list, models_list):
-        self.models_loader =  ModelsLoader()
-        self.net_list = self.models_loader(models_list)
+        self.model_loader =  ModelLoader()
+        self.net_list = self.model_loader(models_list)
         pass
 
     def inference(self, frame):

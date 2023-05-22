@@ -18,7 +18,7 @@ class ModelNames():
             path_list.append(self.NAMES_DICT.get(model))
         return path_list
 
-class ModelsLoader():
+class ModelLoader():
     """
     """
     
