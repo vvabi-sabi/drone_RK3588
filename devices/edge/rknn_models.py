@@ -76,10 +76,9 @@ class RKNNModelLoader():
             print(f'Export {model} model failed!')
             return ret
         print('Init runtime environment')
-        ret = rknnlite.init_runtime(
-                    async_mode=self.async_mode,
-                    core_mask = core
-                )
+        ret = rknnlite.init_runtime(async_mode=self.async_mode,
+                                    core_mask = core
+                                    )
         if ret != 0:
             print('Init runtime environment failed!')
             return ret
@@ -89,7 +88,7 @@ class RKNNModelLoader():
 
 class ModelBuilder():
     
-    def __init__(self, rknn_models, q_input,):
+    def __init__(self, rknn_models, q_input):
         self._rknn_list = rknn_models
         self.net_list = self.build_models(q_input)
     
@@ -128,52 +127,3 @@ class BaseModel():
     def __init__(self, rknn_model, q_input, q_output):
         self._rknnlite = rknn_model
         self.inference = Inference(q_input, q_output)
-    
-    def inference(self, frame_list):
-        # frame = self._pre_process(frame)
-        outputs = []
-        for frame in frame_list:
-            vector = self._rknnlite.inference(inputs=[frame])
-            outputs.append(vector)
-        return np.array(outputs)
-
-
-    
-    # def post_process(self, q_in, q_out):
-    #     while True:
-    #         outputs, raw_frame, frame_id = q_in.get()
-    #         frame = raw_frame.copy()
-    #         results = self._post_process(outputs, frame)
-    #         q_out.put([raw_frame, *results, frame_id])
-
-# class Yolov5(BaseModel):
-#     pass
-
-
-# class ResNet(BaseModel):
-#     pass
-
-
-# class UNet(BaseModel):
-#     pass
-
-
-# class Encoder(BaseModel):
-    
-#     def inference(self, q_in, q_out):
-#         # TODO
-#         # add multi_input/output, C-Python insert
-#         # VAE model
-#         # RGB input
-#         while True:
-#             frame, raw_frame, frame_id = q_in.get()
-#             imgs_list = self._pre_process(frame) # len = 18
-#             outputs = []
-#             for transform_img in imgs_list:
-#                 input_img = transform_img
-#                 vector = self._rknnlite.inference(inputs=[input_img])
-#                 vector = vector[0].reshape(2000)
-#                 outputs.append(vector)
-#             outputs = np.array(outputs)
-#             q_out.put((outputs, raw_frame, frame_id))
-

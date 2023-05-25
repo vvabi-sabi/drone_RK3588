@@ -7,7 +7,6 @@ from devices import Cam, RK3588
 def run(device, visualizer, post_process, odometry):
     device._camera.run()
     device._neuro.run_inference()
-    #device.start()
     if post_process is not None and odometry is None:
         post_process.run()
         while True:
@@ -34,14 +33,12 @@ def run(device, visualizer, post_process, odometry):
             _, outputs = device.get_neuro_outputs()
 
 def main(source):
-    """Runs inference and addons (if mentions)
-    Creating storages and sending data to them
+    """
     """
     post_process = True
     show_trajectory = False
     queue_size = 5
     q_pre = Queue(maxsize=queue_size)
-    #q_outs = Queue(maxsize=cfg["inference"]["buf_size"])
     q_post = Queue(maxsize=queue_size)
     models_list = ['YOLO'] # ['ResNet', 'UNet', 'Encoder']
     camera = Cam(source=source,
