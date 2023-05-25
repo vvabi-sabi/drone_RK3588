@@ -1,1 +1,0 @@
-from .storages import Storage, ImageStorage, DetectionsStorage, CoordinatesStorage, StoragePurpose

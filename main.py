@@ -1,68 +1,64 @@
-import json
-import time
-from pathlib import Path
-from threading import Thread
+from multiprocessing import Process, Queue
 
-import addons.storages as strgs
-from base import RK3588
-from utils import fill_storages, show_frames_localy
-
-CONFIG_FILE = str(Path(__file__).parent.absolute()) + "/config.json"
-with open(CONFIG_FILE, 'r') as config_file:
-    cfg = json.load(config_file)
+from utils import PostProcesses, Odometry, Visualizer
+from devices import Cam, RK3588
 
 
-def main():
+def run(device, visualizer, post_process, odometry):
+    device._camera.run()
+    device._neuro.run_inference()
+    #device.start()
+    if post_process is not None and odometry is None:
+        post_process.run()
+        while True:
+            frame, outputs = device.get_neuro_outputs()
+            frame = post_process(frame, outputs)
+            visualizer.show_frame(frame)
+    elif odometry is not None and post_process is None:
+        odometry.run()
+        while True:
+            _, outputs = device.get_neuro_outputs()
+            coords = odometry(outputs)
+            visualizer.show_trajectory(coords)
+    if post_process is not None  and odometry is not None:
+        post_process.run()
+        odometry.run()
+        while True:
+            frame, outputs = device.get_neuro_outputs()
+            post_process(frame, outputs)
+            coords = odometry(outputs)
+            visualizer.show_trajectory(coords)
+            visualizer.show_frame(frame)
+    else:
+        while True:
+            _, outputs = device.get_neuro_outputs()
+
+def main(source):
     """Runs inference and addons (if mentions)
     Creating storages and sending data to them
     """
-    rk3588 = RK3588()
-    start_time = time.time()
-    rk3588.start()
-    if not cfg["storages"]["state"]:
-        try:
-            while True:
-                rk3588.show(start_time)
-        except Exception as e:
-            print("Main exception: {}".format(e))
-            exit()
-    raw_frames_storage = strgs.ImageStorage(
-                                    strgs.StoragePurpose.RAW_FRAME
-                            )
-    inferenced_frames_storage = strgs.ImageStorage(
-                                    strgs.StoragePurpose.INFERENCED_FRAME
-                            )
-    detections_storage = None #strgs.DetectionsStorage(strgs.StoragePurpose.DETECTIONS)
-    coordinates_storage = strgs.CoordinatesStorage(strgs.StoragePurpose.COORDINATES)
-    fill_thread = Thread(
-        target=fill_storages,
-        kwargs={
-            "rk3588": rk3588,
-            "raw_img_strg": raw_frames_storage,
-            "inf_img_strg": inferenced_frames_storage,
-            "dets_strg": detections_storage,
-            "coords_strg": coordinates_storage,
-            "start_time": start_time
-        },
-        daemon=True
-    )
-    fill_thread.start()
-    
+    post_process = True
+    show_trajectory = False
+    queue_size = 5
+    q_pre = Queue(maxsize=queue_size)
+    #q_outs = Queue(maxsize=cfg["inference"]["buf_size"])
+    q_post = Queue(maxsize=queue_size)
+    models_list = ['YOLO'] # ['ResNet', 'UNet', 'Encoder']
+    camera = Cam(source=source,
+                 queue=q_pre,
+                 models=models_list)
+    camera.set()
+    device = RK3588(camera, models_list, queue=q_post)
+    post_processes = PostProcesses(models_list, post_process)
+    odometry_algs = Odometry(models_list, show_trajectory)
+    visualizer = Visualizer()
     try:
-        show_frames_localy(
-            inf_img_strg=inferenced_frames_storage,
-            start_time=start_time
-        )
+        run(device, visualizer, post_processes, odometry_algs)
     except Exception as e:
         print("Main exception: {}".format(e))
-    finally:
-        if raw_frames_storage:
-            raw_frames_storage.clear_buffer()
-        if inferenced_frames_storage:
-            inferenced_frames_storage.clear_buffer()
-        if detections_storage:
-            detections_storage.clear_buffer()
+        exit()
 
 
 if __name__ == "__main__":
-    main()
+    camera_source = 11 # 'path/to/video.mp3'
+    main(camera_source)

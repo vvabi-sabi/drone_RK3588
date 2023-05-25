@@ -1,52 +1,45 @@
-# UAV navigation based on Firefly ROC-RK3588S
-## YOLOv5
-![yolo_result](images/YOLOv5.png)
+# UAV navigation by Firefly ROC-RK3588S
+Use of various types of neural networks for aircraft navigation.
+Different post processes are used for each model. Same as odometry algorithms.
+Supports running models in parallel
 
+## YOLOv5:
 ```
-photo --> YOLOv5 --> bbox centers
-```
-## ResNet
-![resnet_result](images/ResNet.png)
-
-```
-photo --> ResNet --> index, crop (localization)
-crop --> SIFT --> scale, angle (and orientation)
-```
-
-## UNet
-![unet_result](images/UNet.png)
-
-```
-photo --> UNet --> mask
+1) inference
+  photo --> YOLOv5 --> bbox
+2) Post Process
+  Bounding boxes around objects are applied to the original photo.
+3) Localization
+  Using the bbox centers of objects, a graph is built.
 ```
 
-## AutoEncoder
-![ae_result](images/AutoEncoder.png)
+## ResNet:
+```
+1) inference
+  photo --> ResNet50 --> candidates (top 5)
+2) Post Process
+  The index of the first candidate is applied to the original photo.
+3) Localization
+  Using the Markov chains and nearest neighbors calculates position and direction.
+```
 
+## UNet:
 ```
-photo --> AE --> vector
-vector --> db --> index, scale, angle (localization and orientation)
+1) inference
+  photo --> UNet --> mask
+2) Post Process
+  The resulting mask is superimposed on the image.
+3) Localization
+  ...
 ```
 
-# rknn toolkit lite2
-
-## Install
-Install miniconda
+## Encoder:
 ```
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
-bash Miniconda3-latest-Linux-aarch64.sh
-```
-Create conda python3.9 - env
-```
-conda create -n <env-name> python=3.9
-```
-Activate virtualenv
-```
-conda activate <env-name>
-```
-Install RKNN-Toolkit2-Lite
-```
-cd drone_RK3588/install/
-pip install -r requirements.txt
-pip install rknn_toolkit_lite2-1.4.0-cp39-cp39-linux_aarch64.whl
+1) inference
+  photo --> AE --> vector
+2) Post Process
+  The vector is compared with all vectors from the database. 
+  The index of the first candidate is applied to the original photo.
+3) Localization
+  vector --> db --> index, scale, angle (localization and orientation)
 ```
