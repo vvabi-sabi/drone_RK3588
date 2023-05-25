@@ -7,9 +7,6 @@ DATASET = './dataset.txt'
 
 QUANTIZE_ON = True
 
-OBJ_THRESH = 0.25
-NMS_THRESH = 0.45
-IMG_SIZE = 640
 
 def main(ONNX_MODEL = 'yolov5s.onnx'):
     # Create RKNN object
