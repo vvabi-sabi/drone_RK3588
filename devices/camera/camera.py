@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 
-class Cam():
+class Camera():
     """
     """
     def __init__(self, source: int, q_in: Queue, model_list: list):

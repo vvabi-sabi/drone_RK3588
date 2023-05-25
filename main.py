@@ -1,7 +1,7 @@
 from multiprocessing import Queue
 
 from utils import PostProcesses, Odometry, Visualizer
-from devices import Cam, RK3588
+from devices import Camera, RK3588
 
 
 def run(device, visualizer, post_process, odometry):
@@ -41,7 +41,7 @@ def main(source):
     q_pre = Queue(maxsize=queue_size)
     q_post = Queue(maxsize=queue_size)
     models_list = ['YOLO'] # ['ResNet', 'UNet', 'Encoder']
-    camera = Cam(source=source,
+    camera = Camera(source=source,
                  queue=q_pre,
                  models=models_list)
     camera.set()
