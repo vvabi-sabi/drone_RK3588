@@ -1,4 +1,7 @@
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
+from multiprocessing import Process, Queue
+from typing import Any
 import numpy as np
 from rknnlite.api import RKNNLite
 
@@ -86,28 +89,46 @@ class RKNNModelLoader():
 
 class ModelBuilder():
     
-    def __init__(self, rknn_models):
+    def __init__(self, rknn_models, q_input,):
         self._rknn_list = rknn_models
-        self.net_list = self.build_models()
+        self.net_list = self.build_models(q_input)
     
-    def build_models(self):
+    def build_models(self, q_input, q_output):
         nets = []
         for rknn_model in self._rknn_list:
-            net = self.new('BaseModel', rknn_model)
+            q_output = Queue(maxsize=3)
+            net = self.new('BaseModel', rknn_model, q_input, q_output)
             nets.append(net)
         return nets
     
-    def new(self, model_name, rknn_model):
-        return globals().get(model_name)(rknn_model)
+    def new(self, model_name, rknn_model, q_input, q_output):
+        return globals().get(model_name)(rknn_model, q_input, q_output)
+
+
+class Inference(Process):
+        def __init__(self, input, output):
+            super().__init__(group=None, target=None, name=None, args=(), kwargs={}, daemon=True)
+            self.input = input
+            self.output = output
+        
+        def run(self):
+            while True:
+                frame_list = self.input.get()
+                outputs = []
+                for frame in frame_list:
+                    vector = self._rknnlite.inference(inputs=[frame])
+                    outputs.append(vector)
+                self.output.put(np.array(outputs))
 
 
 class BaseModel():
     """
     """
     
-    def __init__(self, rknn_model):
+    def __init__(self, rknn_model, q_input, q_output):
         self._rknnlite = rknn_model
-
+        self.inference = Inference(q_input, q_output)
+    
     def inference(self, frame_list):
         # frame = self._pre_process(frame)
         outputs = []

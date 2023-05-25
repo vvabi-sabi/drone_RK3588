@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
 
 from utils import PostProcesses, Odometry, Visualizer
 from devices import Cam, RK3588
@@ -48,8 +48,8 @@ def main(source):
                  queue=q_pre,
                  models=models_list)
     camera.set()
-    device = RK3588(camera, models_list, queue=q_post)
-    post_processes = PostProcesses(models_list, post_process)
+    device = RK3588(camera, models_list)
+    post_processes = PostProcesses(models_list, post_process, queue=q_post)
     odometry_algs = Odometry(models_list, show_trajectory)
     visualizer = Visualizer()
     try:
