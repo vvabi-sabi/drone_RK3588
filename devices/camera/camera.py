@@ -9,63 +9,14 @@ import cv2
 import numpy as np
 
 
-ROOT = str(Path(__file__).parent.parent.parent.absolute()) + '/'
-CONFIG_FILE = ROOT + "config.json"
-with open(CONFIG_FILE, 'r') as config_file:
-    cfg = json.load(config_file)
-Mat = np.ndarray[int, np.dtype[np.generic]]
-
-
 class Cam():
-    """Class for camera
-    Sets camera settings, gets raw frames, shows inferenced frames (optional)
-    Args
-    ---------------------------------------------------------------------------
-    source : int
-        Camera index
-    q_in : multiprocessing.Queue
-        Queue that data reads from
-    q_out : multiprocessing.Queue
-        Queue that data sends to
-    ---------------------------------------------------------------------------
-    Attributes
-    ---------------------------------------------------------------------------
-    _q_out : multiprocessing.Queue
-        Queue that data sends to
-    _q_in : multiprocessing.Queue
-        Queue that data reads from
-    _cap : cv2.VideoCapture
-        Object of VideoCapture class
-    _last_frame_id : int
-        Index of last showed frame
-    _frame_id : int
-        Index of recorded frame
-    _fps : float
-        Frames per second
-    _count : int
-        Counts all recorded frames
-    _begin : float | int
-        Start time of counting every 30 frames
-    ---------------------------------------------------------------------------
-    Methods
-    ---------------------------------------------------------------------------
-    _bgr2rgb(frame: np.ndarray) : np.ndarray
-        Resizing raw frames to net size
-    record() : None
-        Recordes raw frames
-    show() : None
-        Showes frames with bboxes
-    ---------------------------------------------------------------------------
     """
-    def __init__(self, source: int, q_in: Queue, q_out: Queue):
+    """
+    def __init__(self, source: int, q_in: Queue, model_list: list):
         self._q_in = q_in
-        self._q_out = q_out
-        self._stop_record = Value('i', 0)
         self.source = source
-        self._last_frame_id = 0
-        self._frame_id = 0
-        self._fps = 0
-        self._max_fps = 0
+        self.model_list = model_list
+        self.frame = None
         self._count = 0
         self._begin = 0
 
@@ -89,7 +40,7 @@ class Cam():
             )
         return cap
 
-    def _bgr2rgb(self, frame: Mat):
+    def _bgr2rgb(self, frame):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # frame = cv2.resize(
         #     frame,
@@ -104,26 +55,19 @@ class Cam():
             print("Bad source")
             raise SystemExit
         try:
-            while not bool(self._stop_record.value): # type: ignore
+            while cap.isOpened():
                 ret, frame = cap.read()
                 if not ret:
                     print("Camera stopped!")
                     raise SystemExit
-                raw_frame = frame.copy()
-                frame = self._bgr2rgb(frame)
-                self._q_out.put((frame, raw_frame, self._frame_id))
-                self._frame_id+=1
+                self.frame = frame
+                #frame = self._bgr2rgb(frame)
+                #self._q_out.put((frame, frame_processed))
             cap.release()
         except Exception as e:
             print("Stop recording loop. Exception {}".format(e))
-        finally:
-            if cfg["debug"]["print_camera_release"]:
-                message = "camera released - " +\
-                    datetime.now().strftime('%Y-%m-%d.%H-%M-%S.%f') + "\n"
-                with open(ROOT + cfg["debug"]["camera_release_file"], "a") as f:
-                    f.write(message)
-            cap.release()
-            raise SystemExit
+
+    
 
     def show(self, start_time):
         raw_frame, frame, _, frame_id = self._q_in.get()
@@ -146,28 +90,7 @@ class Cam():
             thickness = 1,
             lineType = cv2.LINE_AA
         )
-        frame = cv2.putText(
-            img = frame,
-            text = "fps: {:.2f}".format(self._fps),
-            org = (5, 60),
-            fontFace = cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale = 1,
-            color = (0,255,0),
-            thickness = 1,
-            lineType = cv2.LINE_AA
-        )
-        frame = cv2.putText(
-            img = frame,
-            text = "max_fps: {:.2f}".format(self._max_fps),
-            org = (5, 90),
-            fontFace = cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale = 1,
-            color = (0,255,0),
-            thickness = 1,
-            lineType = cv2.LINE_AA
-        )
         cv2.imshow('frame', frame)
-        self._last_frame_id = frame_id
         cv2.waitKey(1)
         if cfg["debug"]["showed_frame_id"]:
             with open(cfg["debug"]["showed_id_file"], 'a') as f:
