@@ -1,13 +1,6 @@
-import os
-import json
-import time
-from datetime import datetime
-from multiprocessing import Queue
-from pathlib import Path
-
 import cv2
-import numpy as np
 
+import pre_processes
 
 class Camera():
     """
