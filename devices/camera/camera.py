@@ -2,7 +2,7 @@ import os
 import json
 import time
 from datetime import datetime
-from multiprocessing import Queue, Value
+from multiprocessing import Queue
 from pathlib import Path
 
 import cv2
@@ -12,8 +12,8 @@ import numpy as np
 class Camera():
     """
     """
-    def __init__(self, source: int, q_in: Queue, model_list: list):
-        self._q_in = q_in
+    def __init__(self, source: int, queue: Queue, model_list: list):
+        self._queue = queue
         self.source = source
         self.model_list = model_list
         self._count = 0
@@ -48,4 +48,4 @@ class Camera():
         for frame in self.frames:
             rgb_frame = self._bgr2rgb(frame)
             gray_frame = self._bgr2gray(frame)
-            self._q_out.put((frame, [rgb_frame, gray_frame]))
+            self._queue.put((frame, [rgb_frame, gray_frame]))
