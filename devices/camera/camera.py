@@ -49,3 +49,6 @@ class Camera():
             rgb_frame = self._bgr2rgb(frame)
             gray_frame = self._bgr2gray(frame)
             self._queue.put((frame, [rgb_frame, gray_frame]))
+    
+    def get_frame(self):
+        return next(self.frames)
