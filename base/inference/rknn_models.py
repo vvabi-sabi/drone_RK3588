@@ -4,8 +4,8 @@ from pathlib import Path
 import numpy as np
 from rknnlite.api import RKNNLite
 
-from base.pre_process import pre_yolov5, pre_unet, pre_resnet, pre_autoencoder
-from base.post_process import post_yolov5, post_unet, post_resnet, post_autoencoder
+from base.pre_process import pre_yolov5, pre_yolact, pre_unet, pre_resnet, pre_autoencoder
+from base.post_process import post_yolov5, post_yolact, post_unet, post_resnet, post_autoencoder
 
 ROOT = Path(__file__).parent.parent.parent.absolute()
 MODELS = str(ROOT) + "/models/"
@@ -90,6 +90,8 @@ class ModelsFactory():
     def load_processes(Class):
         if Class.__name__ == 'Yolov5':
             return pre_yolov5, post_yolov5
+        elif Class.__name__ == 'YolAct':
+            return pre_yolact, post_yolact
         elif Class.__name__ == 'UNet':
             # TODO
             # PIDNet test

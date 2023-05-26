@@ -26,6 +26,15 @@ def pre_yolov5(frame: Mat):
     )
     return frame
 
+def pre_yolact(frame: Mat):
+    """
+    """
+    net_size = cfg["inference"]["net_size"]
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    net_size = (net_size, net_size)
+    frame = cv2.resize(frame,net_size)
+    return frame
+
 def pre_unet(frame):
     NET_SIZE = cfg["inference"]["net_size"]
     #cx, cy = int(frame.shape[0]/2), int(frame.shape[1]/2)

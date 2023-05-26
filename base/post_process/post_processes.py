@@ -37,6 +37,9 @@ def post_yolov5(outputs, frame):
         )
     return frame, dets
 
+def post_yolact(outputs, frame):
+    pass
+
 def post_unet(outputs, frame):
     alpha = 0.7
     beta = (1.0 - alpha)
