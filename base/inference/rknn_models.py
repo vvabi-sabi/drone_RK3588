@@ -123,6 +123,10 @@ class Yolov5(ModelsFactory):
     pass
 
 
+class YolAct(ModelsFactory):
+    pass
+
+
 class UNet(ModelsFactory):
     pass
 
