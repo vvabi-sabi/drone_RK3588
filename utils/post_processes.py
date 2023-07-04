@@ -15,6 +15,8 @@ with open(CONFIG_FILE, 'r') as config_file:
 class PostProcesses():
     pass
 
+def post_yolov5(outputs, frame):
+    pass
 
 def post_yolov5(outputs, frame):
     """Overlays bboxes on frames
