@@ -6,7 +6,7 @@
 photo --> YOLOv5 --> bbox centers
 ```
 ## YOLACT
-![yolact_result](images/yolact_rknn.jpg)
+![yolact_result](images/yolact_rknn.png)
 
 ```
 photo --> YOLACT --> mask, bbox centers
