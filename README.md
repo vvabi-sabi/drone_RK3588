@@ -12,7 +12,7 @@ Supports running models in parallel
 3) Localization
   Using the bbox centers of objects, a graph is built.
 ```
-## YOLOv5:
+## YOLACT:
 ```
 1) inference
   photo --> YOLACT --> bbox, mask
