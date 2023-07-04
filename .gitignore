@@ -6,6 +6,7 @@ __pycache__
 *.txt
 !install/requirements.txt
 !resources/HostPC/requirements_cp38-1.4.0.txt
+!images/yolact_rknn.png
 
 # models
 *.rknn
