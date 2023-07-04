@@ -5,6 +5,12 @@
 ```
 photo --> YOLOv5 --> bbox centers
 ```
+## YOLACT
+![yolact_result](images/yolact_rknn.jpg)
+
+```
+photo --> YOLACT --> mask, bbox centers
+```
 ## ResNet
 ![resnet_result](images/ResNet.png)
 

@@ -14,4 +14,4 @@ __pycache__
 !models/unet.rknn
 !models/resnet.rknn
 !models/encoder.rknn
-!models/yolact.rknn
+!models/yolact_544.rknn
